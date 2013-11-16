@@ -88,6 +88,13 @@ textarea {
 .author {
 	margin-bottom: 10px;
 }
+.date {
+	float: right;
+	font-size: 0.7em;
+}
+.content {
+	clear: right;
+}
 .message-actions {
 	font-size: 12px;
 	clear: both;
