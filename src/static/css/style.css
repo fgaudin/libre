@@ -9,6 +9,11 @@ body,
 body{
 	background: #D0E9AF;
 }
+h1 {
+	font-size: 1.2em;
+    margin: 0;
+    font-weight: bold;
+}
 h2 {
 	color: #326342;
 }
