@@ -6,14 +6,16 @@
         <link rel="stylesheet" href="/static/css/style.css">
     </head>
     <body>
-        <script type="text/x-handlebars" data-template-name="message/create">
-        <form class="pure-form">
-            {{!textarea id="new-message" placeholder="Post to your friends"
-                value=newMessage action="create"}}
-           <div class="post">
-               <input {{!action 'create'}} type="submit" value="Post" class="pure-button pure-button-primary">
-           </div>
-        </form>
+        <script type="text/x-handlebars" data-template-name="libre/create">
+        <div class="new-message">
+            <form class="pure-form">
+                {{!textarea id="new-message" placeholder="Post to your friends"
+                    value=newMessage action="create"}}
+                <div class="post">
+                    <input {{!action 'create'}} type="submit" value="Post" class="pure-button pure-button-primary">
+                </div>
+            </form>
+        </div>
         </script>
 
         <script type="text/x-handlebars" data-template-name="libre/index">
@@ -23,7 +25,7 @@
                     <h2>Friends feed</h2>
                     <div class="messages">
                         <div class="message-to-friend">
-                            {{! render "message/create"}}
+                            {{! render "libre/create"}}
                         </div>
                         {{!#each}}
                             {{! render "message" this}}

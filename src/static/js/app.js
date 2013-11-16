@@ -7,8 +7,8 @@ App.ApplicationAdapter = DS.FixtureAdapter.extend();
 App.Router.map(function () {
   this.resource('libre', { path: '/' }, function(){
       this.route('login',  { path: '/login' });
+      this.route('create',  { path: '/new' });
       this.resource("message", { path: "/message/:message_id" }, function(){
-      this.route('create',  { path: '/message/new' });
       });
   });
 });
@@ -76,7 +76,7 @@ App.MessageController = Ember.ObjectController.extend({
     }
 });
 
-App.MessageCreateController = Ember.ObjectController.extend({
+App.LibreCreateController = Ember.Controller.extend({
     actions: {
         create: function () {
           var body = this.get('newMessage');

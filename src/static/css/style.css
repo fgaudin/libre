@@ -118,3 +118,8 @@ textarea {
 .repost {
     text-align: right;
 }
+
+.new-message {
+    width: 423px;
+    margin: 0 auto;
+}
