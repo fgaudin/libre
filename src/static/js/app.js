@@ -2,13 +2,22 @@ window.App = Ember.Application.create();
 App.ApplicationAdapter = DS.FixtureAdapter.extend();
 
 App.Router.map(function () {
-  this.resource('messages', { path: '/' });
+  this.resource('messages', { path: '/' }, function(){
+	  this.route("new");
+  });
+  this.resource("message", { path: "/:photo_id" }, function(){
+    this.resource("message", { path: "/:message_id" });
+  });
 });
 
 App.Message = DS.Model.extend({
   content: DS.attr('string'),
   author: DS.attr('string'),
-  date: DS.attr('date')
+  date: DS.attr('date'),
+  
+  formatedDate: function() {
+	    return this.get('date').toLocaleString();
+	  }.property('date')
 });
 
 App.Message.FIXTURES = [
