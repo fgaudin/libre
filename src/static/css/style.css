@@ -7,7 +7,10 @@ body,
     font-family: "Helvetica Neue",Arial,sans-serif;
 }
 body{
-	background: #FFF;
+	background: #D0E9AF;
+}
+h2 {
+	color: #326342;
 }
 a, a:hover {
 	color: #326342;
@@ -34,7 +37,7 @@ a, a:hover {
 	padding-top: 45px;
 }
 .messages {
-	background: #D0E9AF;
+	background: #FFF;
 	border: 1px solid #326342;
 	border-radius: 5px;
 	padding:10px;
@@ -55,8 +58,14 @@ textarea {
     margin: 10px 0px;
     line-height: 20px;
 }
+.pure-button {
+	font-size: 75%;
+}
 .pure-button-primary{
 	background: #326342;
+}
+.post {
+	text-align: right;
 }
 .author-avatar {
 	float: left;

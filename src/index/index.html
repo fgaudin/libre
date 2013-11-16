@@ -24,7 +24,9 @@
 		                <div class="message-to-friend">
 		                    <form class="pure-form">
 		                       <textarea rows="3" placeholder="Post to your friends"></textarea>
-		                       <input type="submit" value="Post" class="pure-button pure-button-primary">
+		                       <div class="post">
+		                          <input type="submit" value="Post" class="pure-button pure-button-primary">
+		                       </div>
 	                        </form>
 		                </div>
 		                {% for i in range(10) %}
@@ -61,7 +63,9 @@
 		                <div class="message-to-public">
 		                    <form class="pure-form">
 	                           <textarea rows="3" placeholder="Post to everyone"></textarea>
-	                           <input type="submit" value="Post" class="pure-button pure-button-primary">
+	                           <div class="post">
+                                  <input type="submit" value="Post" class="pure-button pure-button-primary">
+                               </div>
 	                        </form>
 		                </div>
 		                {% for i in range(10) %}
