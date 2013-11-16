@@ -101,14 +101,17 @@ textarea {
 	clear: right;
 }
 .message-actions {
-	font-size: 12px;
 	clear: both;
 }
 .like {
 	text-align: left;
 }
+.liked a{
+	color: #FF7373;
+}
 .comment {
     text-align: center;
+    font-size: 12px;
 }
 .repost {
     text-align: right;

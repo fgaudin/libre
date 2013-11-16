@@ -19,13 +19,13 @@
                 <div class="message-actions">
                     <div class="pure-g-r">
                         <div class="pure-u-1-3">
-                            <div class="like"><a href="#">Like</a></div>
+                            <div {{!bind-attr class=":like liked"}}><a href="#" {{!action 'toggleLike' id bubbles=false}}>&hearts;</a></div>
                         </div>
                         <div class="pure-u-1-3">
                             <div class="comment"><a href="#">Comment</a></div>
                         </div>
                         <div class="pure-u-1-3">
-                            <div class="repost"><a href="#">Repost</a></div>
+                            <div class="repost"><a href="#">&crarr;</a></div>
                         </div>
                     </div>
                 </div>
