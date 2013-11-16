@@ -62,10 +62,13 @@ App.LibreIndexRoute = Ember.Route.extend({
 
 App.LibreIndexController = Ember.ArrayController.extend({
     sortProperties: ['id'],
-    sortAscending: false,
+    sortAscending: false
+});
+
+App.MessageController = Ember.ObjectController.extend({
     actions: {
         toggleLike: function(message_id){
-        this.store.find('message', message_id).then(function(message){
+            this.store.find('message', message_id).then(function(message){
                 var value = !message.get('liked');
                 message.set('liked', value);
             });

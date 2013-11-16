@@ -6,50 +6,48 @@
         <link rel="stylesheet" href="/static/css/style.css">
     </head>
     <body>
-       <script type="text/x-handlebars" data-template-name="_new_message">
-       <form class="pure-form">
-           {{!textarea id="new-message" placeholder="Post to your friends"
-               value=newMessage action="createMessage"}}
-          <div class="post">
-             <input {{!action 'createMessage'}} type="submit" value="Post" class="pure-button pure-button-primary">
-          </div>
-       </form>
-       </script>
-
-       <script type="text/x-handlebars" data-template-name="libre/index">
-       <div class="pure-g-r feeds">
-           <div class="pure-u-1-2">
-               <div class="feed friend-feed">
-                   <h2>Friends feed</h2>
-                   <div class="messages">
-                       <div class="message-to-friend">
-                           {{! partial new_message}}
-                       </div>
-                       {{!#each}}
-                           {{! render "message" this}}
-                       {{!/each}}
-                   </div>
-               </div>
+        <script type="text/x-handlebars" data-template-name="message/create">
+        <form class="pure-form">
+            {{!textarea id="new-message" placeholder="Post to your friends"
+                value=newMessage action="create"}}
+           <div class="post">
+               <input {{!action 'create'}} type="submit" value="Post" class="pure-button pure-button-primary">
            </div>
-           <div class="pure-u-1-2">
-               <div class="feed public-feed">
-                   <h2>Public feed</h2>
-                   <div class="messages">
-                       <div class="message-to-public">
-                           {{! partial new_message}}
-                       </div>
-                       {{!#each}}
-                           {{! render "message" this}}
-                       {{!/each}}
-               </div>
-               </div>
-           </div>
-       </div>
-       </script>
+        </form>
+        </script>
 
-       <script type="text/x-handlebars" data-template-name="libre/login">
+        <script type="text/x-handlebars" data-template-name="libre/index">
+        <div class="pure-g-r feeds">
+            <div class="pure-u-1-2">
+                <div class="feed friend-feed">
+                    <h2>Friends feed</h2>
+                    <div class="messages">
+                        <div class="message-to-friend">
+                            {{! render "message/create"}}
+                        </div>
+                        {{!#each}}
+                            {{! render "message" this}}
+                        {{!/each}}
+                    </div>
+                </div>
+            </div>
+            <div class="pure-u-1-2">
+                <div class="feed public-feed">
+                    <h2>Public feed</h2>
+                    <div class="messages">
+                        <div class="message-to-public">
+                        </div>
+                        {{!#each}}
+                            {{! render "message" this}}
+                        {{!/each}}
+                </div>
+            </div>
+        </div>
+        </script>
+
+        <script type="text/x-handlebars" data-template-name="libre/login">
             LOGIN
-       </script>
+        </script>
 
         <script type="text/x-handlebars" data-template-name="message">
             <div class="message">
