@@ -1,5 +1,5 @@
 * {
-    box-sizing: border-box;	
+    box-sizing: border-box;
 }
 body,
 .pure-g [class *= "pure-u"],
@@ -7,107 +7,109 @@ body,
     font-family: "Helvetica Neue",Arial,sans-serif;
 }
 body{
-	background: #D0E9AF;
+    background: #D0E9AF;
 }
 h1 {
-	font-size: 1.2em;
+    font-size: 1.2em;
     margin: 0;
     font-weight: bold;
 }
 h2 {
-	color: #326342;
+    color: #326342;
 }
 a, a:hover {
-	color: #326342;
-	text-decoration: none;
+    color: #326342;
+    text-decoration: none;
 }
 .menu a, .menu a:hover {
     color: #FFF;
 }
 #header {
-	background: #326342;
-	height: 35px;
-	position: fixed;
-	width: 100%;
-	padding-top:5px;
+    background: #326342;
+    height: 35px;
+    position: fixed;
+    width: 100%;
+    padding-top:5px;
 }
 .menu, .feeds {
-	max-width: 900px;
+    max-width: 900px;
     margin:0 auto;
 }
 .menu {
-	color: #fff;
+    color: #fff;
 }
 .login {
-	text-align:right;
+    text-align:right;
 }
 #main {
-	padding-top: 45px;
+    padding-top: 45px;
 }
 .messages {
-	background: #FFF;
-	border: 1px solid #326342;
-	border-radius: 5px;
-	padding:10px;
+    background: #FFF;
+    border: 1px solid #326342;
+    border-radius: 5px;
+    padding:10px;
 }
 .friend-feed {
-	margin-right: 5px;
+    margin-right: 5px;
 }
 .public-feed {
     margin-left: 5px;
 }
 textarea {
-	width: 100%;
-	margin-bottom: 5px;
+    width: 100%;
+    margin-bottom: 5px;
 }
 .message {
-	background: #FFF;
+    width: 423px;
+    background: #FFF;
     border-bottom: 1px solid #92CC47;
-    padding: 3px;
-    margin: 10px 0;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px auto;
     line-height: 20px;
 }
 .pure-button {
-	font-size: 75%;
+    font-size: 75%;
 }
 .pure-button-primary{
-	background: #326342;
+    background: #326342;
 }
 .post {
-	text-align: right;
+    text-align: right;
 }
 .author-avatar {
-	float: left;
+    float: left;
 }
 .author-avatar img {
-	width: 48px;
-    height: 48px;   
+    width: 48px;
+    height: 48px;
     border-radius: 5px;
 }
 .message-content {
-	background: #FFF;
+    background: #FFF;
     float: right;
     width: 350px;
     margin-bottom:10px;
 }
 .author {
-	margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 .date {
-	float: right;
-	font-size: 0.7em;
+    float: right;
+    font-size: 0.7em;
 }
 .content {
-	clear: right;
+    clear: right;
 }
 .message-actions {
-	clear: both;
+    clear: both;
 }
 .like {
-	text-align: left;
+    text-align: left;
 }
 .liked a{
-	color: #FF7373;
+    color: #FF7373;
 }
 .comment {
     text-align: center;
@@ -115,11 +117,4 @@ textarea {
 }
 .repost {
     text-align: right;
-}
-.single-message {
-	width: 450px;
-	margin: 0 auto;
-	padding: 10px;
-	background: #FFF;
-	border-radius: 5px;
 }
