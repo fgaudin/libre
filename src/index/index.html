@@ -36,7 +36,7 @@
 	   <div class="pure-g-r feeds">
 	       <div class="pure-u-1-2">
 	           <div class="feed friend-feed">
-	               <h2>Friend feed</h2>
+	               <h2>Friends feed</h2>
 	               <div class="messages">
 	                   <div class="message-to-friend">
 	                       <form class="pure-form">
@@ -74,6 +74,10 @@
 	       </div>
 	   </div>
 	   </script>
+	   
+	   <script type="text/x-handlebars" data-template-name="libre/login">
+            LOGIN
+       </script>
 
         <script type="text/x-handlebars" data-template-name="message">
             <div class="single-message">
@@ -88,7 +92,7 @@
 	                <h1><a href="/">Libre</a></h1>
 	            </div>
 	            <div class="pure-u-1-3 login">
-                       Login
+                       {{!#link-to 'libre.login'}}Login{{!/link-to}}
                    </div>
 	        </div>
         </header>

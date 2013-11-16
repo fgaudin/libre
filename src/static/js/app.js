@@ -6,6 +6,7 @@ App.ApplicationAdapter = DS.FixtureAdapter.extend();
 
 App.Router.map(function () {
   this.resource('libre', { path: '/' }, function(){
+	  this.route('login',  { path: '/login' });
 	  this.resource("message", { path: "/message/:message_id" });
   });
 });
@@ -53,7 +54,7 @@ App.LibreIndexRoute = Ember.Route.extend({
   }
 });
 
-App.LibreController = Ember.ArrayController.extend({
+App.LibreIndexController = Ember.ArrayController.extend({
 	sortProperties: ['id'],
 	sortAscending: false,
 	actions: {

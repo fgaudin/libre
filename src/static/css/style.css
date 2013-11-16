@@ -21,7 +21,7 @@ a, a:hover {
 	color: #326342;
 	text-decoration: none;
 }
-h1 a, h1 a:hover {
+.menu a, .menu a:hover {
     color: #FFF;
 }
 #header {
