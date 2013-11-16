@@ -21,6 +21,9 @@ a, a:hover {
 	color: #326342;
 	text-decoration: none;
 }
+h1 a, h1 a:hover {
+    color: #FFF;
+}
 #header {
 	background: #326342;
 	height: 35px;
