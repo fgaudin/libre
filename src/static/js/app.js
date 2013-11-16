@@ -1,72 +1,74 @@
-window.App = Ember.Application.create();
+window.App = Ember.Application.create({
+	LOG_TRANSITIONS: true
+});
+
 App.ApplicationAdapter = DS.FixtureAdapter.extend();
 
 App.Router.map(function () {
-  this.resource('messages', { path: '/' }, function(){
-	  this.route("new");
-  });
-  this.resource("message", { path: "/:photo_id" }, function(){
-    this.resource("message", { path: "/:message_id" });
+  this.resource('libre', { path: '/' }, function(){
+	  this.resource("message", { path: "/message/:message_id" });
   });
 });
 
 App.Message = DS.Model.extend({
-  content: DS.attr('string'),
+  content1: DS.attr('string'),
   author: DS.attr('string'),
   date: DS.attr('date'),
   
   formatedDate: function() {
-	    return this.get('date').toLocaleString();
-	  }.property('date')
+    return this.get('date').toLocaleString();
+  }.property('date')
 });
 
 App.Message.FIXTURES = [
    {
      id: 1,
-     content: 'Tennessee Pastor Disputes Wildlife Possession Charge by State http://nyti.ms/1eXMq9H ',
+     content1: 'Tennessee Pastor Disputes Wildlife Possession Charge by State http://nyti.ms/1eXMq9H ',
      author: 'The New York Times',
      date: new Date('2013-01-01')
    },
    {
      id: 2,
-     content: "Il s'en est passé des choses cette semaine sur @franceinter ! Quoi ?... Réponse sur http://bit.ly/rambo72  #rambobino pic.twitter.com/kxHx4oaOIm",
+     content1: "Il s'en est passé des choses cette semaine sur @franceinter ! Quoi ?... Réponse sur http://bit.ly/rambo72  #rambobino pic.twitter.com/kxHx4oaOIm",
      author: "France Inter",
      date: new Date('2013-01-01')
    },
    {
      id: 3,
-     content: "Bon, fin de l'analyse politique de comptoir, je vais aller chercher le pain.!",
+     content1: "Bon, fin de l'analyse politique de comptoir, je vais aller chercher le pain.!",
      author: "Padre Pio",
      date: new Date('2013-01-01')
    }
   ];
 
-App.MessagesRoute = Ember.Route.extend({
+App.LibreRoute = Ember.Route.extend({
   model: function () {
     return this.store.find('message');
   }
 });
 
-App.MessagesController = Ember.ArrayController.extend({
+App.LibreIndexRoute = Ember.Route.extend({
+  model: function () {
+    return this.modelFor('libre');
+  }
+});
+
+App.LibreController = Ember.ArrayController.extend({
 	sortProperties: ['id'],
 	sortAscending: false,
 	actions: {
 	    createMessage: function () {
-	      var content = this.get('newMessage');
-	      if (!content.trim()) { return; }
+	      var content1 = this.get('newMessage');
+	      if (!content1.trim()) { return; }
 
 	      var message = this.store.createRecord('message', {
 	    	id: 4,
-	        content: content,
+	        content1: content1,
 	        author: 'me',
 	        date: new Date()
 	      });
-
-	      // Clear the "New Todo" text field
 	      this.set('newMessage', '');
-
-	      // Save the new model
 	      message.save();
 	    }
-	  }
-	});
+	}
+});

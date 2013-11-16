@@ -21,7 +21,7 @@ a, a:hover {
 	color: #326342;
 	text-decoration: none;
 }
-.header {
+#header {
 	background: #326342;
 	height: 35px;
 	position: fixed;
@@ -38,7 +38,7 @@ a, a:hover {
 .login {
 	text-align:right;
 }
-.feeds {
+#main {
 	padding-top: 45px;
 }
 .messages {
@@ -58,9 +58,10 @@ textarea {
 	margin-bottom: 5px;
 }
 .message {
+	background: #FFF;
     border-bottom: 1px solid #92CC47;
     padding: 3px;
-    margin: 10px 0px;
+    margin: 10px 0;
     line-height: 20px;
 }
 .pure-button {
@@ -81,6 +82,7 @@ textarea {
     border-radius: 5px;
 }
 .message-content {
+	background: #FFF;
     float: right;
     width: 350px;
     margin-bottom:10px;
@@ -107,4 +109,11 @@ textarea {
 }
 .repost {
     text-align: right;
+}
+.single-message {
+	width: 450px;
+	margin: 0 auto;
+	padding: 10px;
+	background: #FFF;
+	border-radius: 5px;
 }

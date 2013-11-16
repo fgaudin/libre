@@ -10,10 +10,10 @@
             <div class="message">
                 <div class="author-avatar"><img src="https://pbs.twimg.com/profile_images/1257042635/alf_bigger.JPG" /></div>
                 <div class="message-content">
-                    <div class="date">{{!formatedDate}}</div>
+                    <div class="date">{{!#link-to 'message' id}} {{!formatedDate}}{{!/link-to}}</div>
                     <div class="author"><a href="#">{{!author}}</a></div>
                     <div class="content">
-                        {{!content}}
+                        {{!content1}}
                     </div>
                 </div>
                 <div class="message-actions">
@@ -31,9 +31,58 @@
                 </div>
            </div>
 	   </script>
-	   
-        <script type="text/x-handlebars" data-template-name="messages">
-        <div class="header">
+
+	   <script type="text/x-handlebars" data-template-name="libre/index">
+	   <div class="pure-g-r feeds">
+	       <div class="pure-u-1-2">
+	           <div class="feed friend-feed">
+	               <h2>Friend feed</h2>
+	               <div class="messages">
+	                   <div class="message-to-friend">
+	                       <form class="pure-form">
+	                           {{!textarea id="new-friend-message" placeholder="Post to your friends" 
+	                               value=newMessage action="createMessage"}}
+	                          <div class="post">
+	                             <input {{!action 'createMessage'}} type="submit" value="Post" class="pure-button pure-button-primary">
+	                          </div>
+	                       </form>
+	                   </div>
+	                   {{!#each}}
+	                       {{! partial message}}
+	                   {{!/each}}
+	               </div>
+	           </div>
+	       </div>
+	       <div class="pure-u-1-2">
+	           <div class="feed public-feed">
+	               <h2>Public feed</h2>
+	               <div class="messages">
+	                   <div class="message-to-public">
+	                       <form class="pure-form">
+	                          {{!textarea id="new-public-message" placeholder="Post to everyone" 
+	                               value=newMessage action="createMessage"}}
+	                          <div class="post">
+	                             <input type="submit" value="Post" class="pure-button pure-button-primary">
+	                          </div>
+	                       </form>
+	                   </div>
+	                   {{!#each}}
+	                       {{! partial message}}
+	                   {{!/each}}
+	           </div>
+	           </div>
+	       </div>
+	   </div>
+	   </script>
+
+        <script type="text/x-handlebars" data-template-name="message">
+            <div class="single-message">
+            {{! partial message}}
+            </div>
+        </script>
+
+        <script type="text/x-handlebars" data-template-name="libre">
+        <header id="header">
 	        <div class="pure-g menu">
 	            <div class="pure-u-2-3">
 	                <h1>Libre</h1>
@@ -42,47 +91,10 @@
                        Login
                    </div>
 	        </div>
-        </div>
-        <div class="pure-g-r feeds">
-            <div class="pure-u-1-2">
-                <div class="feed friend-feed">
-                    <h2>Friend feed</h2>
-                    <div class="messages">
-		                <div class="message-to-friend">
-		                    <form class="pure-form">
-                                {{!textarea id="new-friend-message" placeholder="Post to your friends" 
-                                    value=newMessage action="createMessage"}}
-		                       <div class="post">
-		                          <input {{!action 'createMessage'}} type="submit" value="Post" class="pure-button pure-button-primary">
-		                       </div>
-	                        </form>
-		                </div>
-		                {{!#each}}
-		                    {{! partial message}}
-		                {{!/each}}
-	                </div>
-                </div>
-            </div>
-            <div class="pure-u-1-2">
-                <div class="feed public-feed">
-                    <h2>Public feed</h2>
-                    <div class="messages">
-		                <div class="message-to-public">
-		                    <form class="pure-form">
-	                           {{!textarea id="new-public-message" placeholder="Post to everyone" 
-                                    value=newMessage action="createMessage"}}
-	                           <div class="post">
-                                  <input type="submit" value="Post" class="pure-button pure-button-primary">
-                               </div>
-	                        </form>
-		                </div>
-		                {{!#each}}
-                            {{! partial message}}
-                        {{!/each}}
-                </div>
-                </div>
-            </div>
-        </div>
+        </header>
+        <section id="main">
+            {{!outlet}}
+        </section>
         </script>
         <script src="http://code.jquery.com/jquery-1.10.2.min.js" type="text/javascript"></script>
         <script src="http://builds.handlebarsjs.com.s3.amazonaws.com/handlebars-1.0.0.js" type="text/javascript"></script>
