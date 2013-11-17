@@ -2,7 +2,43 @@ window.App = Ember.Application.create({
     LOG_TRANSITIONS: true
 });
 
-App.ApplicationAdapter = DS.FixtureAdapter.extend();
+//App.ApplicationAdapter = DS.FixtureAdapter.extend();
+
+Ember.Application.initializer({
+    name: "socket",
+    initialize: function(container, application) {
+        var store = container.lookup('store:main');
+        store.push('feed', {id: 'friends', messages: []});
+        store.push('feed', {id: 'public', messages: []});
+        if ("WebSocket" in window) {
+            console.log("WebSocket is supported by your Browser!");
+            App.ws = new WebSocket("ws://localhost:8888/socket/");
+            App.ws.onopen = function() {
+                App.ws.send("Message to send");
+            };
+            App.ws.onmessage = function (evt) {
+                var msg = JSON.parse(evt.data);
+                if (msg.type == 'feeds') {
+                    store.find('feed', 'friends').then(function(feed){
+                        msg.data.friends.forEach(function(message){
+                            feed.get('messages').addObject(store.push('message', message));
+                        });
+                    });
+                    store.find('feed', 'public').then(function(feed){
+                        msg.data.public.forEach(function(message){
+                            feed.get('messages').addObject(store.push('message', message));
+                        });
+                    });
+                }
+            };
+            App.ws.onclose = function() {
+                console.log("Connection closed");
+            };
+        } else {
+            console.log("Websocket not supported");
+        }
+    }
+});
 
 App.Router.map(function () {
   this.resource('libre', { path: '/' }, function(){
@@ -13,9 +49,7 @@ App.Router.map(function () {
       this.resource("public", { path: "public" }, function(){
           this.route('create',  { path: 'new' });
       });
-      this.route('create',  { path: '/new' });
-      this.resource("message", { path: "/message/:message_id" }, function(){
-      });
+      this.resource("message", { path: "/message/:message_id" });
   });
 });
 
@@ -36,72 +70,10 @@ App.Message = DS.Model.extend({
   }.property('date')
 });
 
-App.Message.FIXTURES = [
-   {
-     id: 1,
-     body: 'Tennessee Pastor Disputes Wildlife Possession Charge by State http://nyti.ms/1eXMq9H ',
-     author: 'The New York Times',
-     date: new Date('2013-01-01'),
-     liked: false
-   },
-   {
-     id: 2,
-     body: "Il s'en est passé des choses cette semaine sur @franceinter ! Quoi ?... Réponse sur http://bit.ly/rambo72  #rambobino pic.twitter.com/kxHx4oaOIm",
-     author: "France Inter",
-     date: new Date('2013-01-01'),
-        liked: true
-   },
-   {
-     id: 3,
-     body: "Bon, fin de l'analyse politique de comptoir, je vais aller chercher le pain.!",
-     author: "Padre Pio",
-     date: new Date('2013-01-01'),
-     liked: false
-   },
-   {
-     id: 4,
-     body: 'Success of Chinese Leader’s Ambitious Economic Plan May Rest on Rural Regions http://nyti.ms/1f0TtOO ',
-     author: 'The New York Times',
-     date: new Date('2013-06-01'),
-     liked: false
-   },
-   {
-     id: 5,
-     body: "Catch the last hour of #TEDYouth now -- some exciting speakers coming up! Watch here: http://tedxyouthday.ted.com/",
-     author: "Tedx",
-     date: new Date('2013-01-01'),
-        liked: true
-   },
-   {
-     id: 6,
-     body: "Yak shaved: upgraded http://geoportail.renie.fr  to OpenLayers 3 and Angular.js. Much cleaner and more mobile-friendly this way :)",
-     author: "Bruno Renié",
-     date: new Date('2013-01-01'),
-     liked: false
-   }
-];
-
-App.Feed.FIXTURES = [
-    {
-        id: "friends",
-        messages: [1, 2, 3]
-    },
-    {
-        id: "public",
-        messages: [4, 5, 6]
-    }
-];
-
-App.LibreRoute = Ember.Route.extend({
-  model: function () {
-      return this.store.find('feed');
-  }
-});
-
 App.LibreIndexRoute = Ember.Route.extend({
-  model: function () {
-    return this.modelFor('libre');
-  }
+    model: function () {
+        return this.store.find('feed');
+    }
 });
 
 App.LibreIndexController = Ember.ArrayController.extend({
@@ -111,6 +83,15 @@ App.LibreIndexController = Ember.ArrayController.extend({
     public: function(){
         return this.store.find('feed', 'public');
     }.property()
+});
+
+App.LibreLoginRoute = Ember.Route.extend({
+    beforeModel: function() {
+        var route = this;
+        App.$.post( "/login", function(data){
+            route.transitionTo('libre');
+        });
+    }
 });
 
 App.FriendsIndexRoute = Ember.Route.extend({
@@ -132,14 +113,18 @@ App.FriendCreateController = Ember.Controller.extend({
           var body = this.get('newMessage');
           if (!body.trim()) { return; }
 
+          var payload = {
+              type:'friend_message',
+          };
           var message = this.get('store').createRecord('message', {
-              id: Math.floor(Math.random()*100)+7,
               body: body,
               author: 'me',
               date: new Date()
           });
           var feed = this.get('controllers.friendsIndex.content');
           feed.get('messages').addObject(message);
+
+          message.save();
 
           this.set('newMessage', '');
         }
