@@ -9,13 +9,31 @@
         <script type="text/x-handlebars" data-template-name="friend/create">
         <div class="new-message">
             <form class="pure-form">
-                {{!textarea id="new-message" placeholder="Post to your friends"
+                {{!textarea id="new-friend-message" placeholder="Post to your friends"
                     value=newMessage action="create"}}
                 <div class="post">
                     <input {{!action 'create'}} type="submit" value="Post" class="pure-button pure-button-primary">
                 </div>
             </form>
         </div>
+        </script>
+
+        <script type="text/x-handlebars" data-template-name="public/create">
+        <div class="new-message">
+            <form class="pure-form">
+                {{!textarea id="new-public-message" placeholder="Post to everyone"
+                    value=newMessage action="create"}}
+                <div class="post">
+                    <input {{!action 'create'}} type="submit" value="Post" class="pure-button pure-button-primary">
+                </div>
+            </form>
+        </div>
+        </script>
+
+        <script type="text/x-handlebars" data-template-name="feed">
+            {{!#each messages}}
+                {{! render "message" this}}
+            {{!/each}}
         </script>
 
         <script type="text/x-handlebars" data-template-name="friends/index">
@@ -25,9 +43,19 @@
                     <div class="message-to-friend">
                         {{! render "friend/create"}}
                     </div>
-                    {{!#each messages}}
-                        {{! render "message" this}}
-                    {{!/each}}
+                    {{! render "feed" this}}
+                </div>
+            </div>
+        </script>
+
+        <script type="text/x-handlebars" data-template-name="public/index">
+            <div class="feed public-feed">
+                <h2>{{!#link-to 'public'}}Public feed{{!/link-to}}</h2>
+                <div class="messages">
+                    <div class="message-to-public">
+                        {{! render "public/create"}}
+                    </div>
+                    {{! render "feed" this}}
                 </div>
             </div>
         </script>
@@ -35,11 +63,10 @@
         <script type="text/x-handlebars" data-template-name="libre/index">
         <div class="pure-g-r feeds">
             <div class="pure-u-1-2">
-                {{! render "friends/index" this }}
+                {{! render "friends/index" friends }}
             </div>
             <div class="pure-u-1-2">
-                <div class="feed public-feed">
-                </div>
+                {{! render "public/index" public }}
             </div>
         </div>
         </script>

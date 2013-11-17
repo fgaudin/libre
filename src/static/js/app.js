@@ -10,10 +10,17 @@ App.Router.map(function () {
       this.resource("friends", { path: "friends" }, function(){
           this.route('create',  { path: 'new' });
       });
+      this.resource("public", { path: "public" }, function(){
+          this.route('create',  { path: 'new' });
+      });
       this.route('create',  { path: '/new' });
       this.resource("message", { path: "/message/:message_id" }, function(){
       });
   });
+});
+
+App.Feed = DS.Model.extend({
+    messages: DS.hasMany('message', {async:true})
 });
 
 App.Message = DS.Model.extend({
@@ -21,6 +28,8 @@ App.Message = DS.Model.extend({
   author: DS.attr('string'),
   date: DS.attr('date'),
   liked: DS.attr('boolean'),
+
+  feed: DS.belongsTo('feed'),
 
   formatedDate: function() {
     return this.get('date').toLocaleString();
@@ -72,56 +81,88 @@ App.Message.FIXTURES = [
    }
 ];
 
-App.FriendFeed = DS.Model.extend({
-    messages: DS.hasMany('message', { async: true })
-});
-
-App.PublicFeed = DS.Model.extend({
-    messages: DS.hasMany('message', { async: true })
-});
-
-App.ApplicationRoute = Ember.Route.extend({
-    model: function() {
-      var store = this.get('store');
-
-      store.push('friendFeed', {
-          id: 1,
-          messages: [1, 2, 3]
-      });
+App.Feed.FIXTURES = [
+    {
+        id: "friends",
+        messages: [1, 2, 3]
+    },
+    {
+        id: "public",
+        messages: [4, 5, 6]
     }
-  });
+];
 
 App.LibreRoute = Ember.Route.extend({
   model: function () {
-      return this.modelFor('friends');
+      return this.store.find('feed');
   }
 });
 
 App.LibreIndexRoute = Ember.Route.extend({
   model: function () {
-    return this.modelFor('friends');
+    return this.modelFor('libre');
   }
+});
+
+App.LibreIndexController = Ember.ArrayController.extend({
+    friends: function(){
+        return this.store.find('feed', 'friends');
+    }.property(),
+    public: function(){
+        return this.store.find('feed', 'public');
+    }.property()
 });
 
 App.FriendsIndexRoute = Ember.Route.extend({
     model: function () {
-        return this.store.find('friendFeed', 1);
+        return this.store.find('feed', "friends");
+    }
+});
+
+App.PublicIndexRoute = Ember.Route.extend({
+    model: function () {
+        return this.store.find('feed', "public");
     }
 });
 
 App.FriendCreateController = Ember.Controller.extend({
+    needs: ['friendsIndex'],
     actions: {
         create: function () {
           var body = this.get('newMessage');
           if (!body.trim()) { return; }
 
           var message = this.get('store').createRecord('message', {
-            id: 7,
-            body: body,
-            author: 'me',
-            date: new Date()
+              id: Math.floor(Math.random()*100)+7,
+              body: body,
+              author: 'me',
+              date: new Date()
           });
+          var feed = this.get('controllers.friendsIndex.content');
+          feed.get('messages').addObject(message);
+
           this.set('newMessage', '');
+        }
+    }
+});
+
+App.PublicCreateController = Ember.Controller.extend({
+    needs: ['publicIndex'],
+    actions: {
+        create: function () {
+            var body = this.get('newMessage');
+            if (!body.trim()) { return; }
+
+            var message = this.get('store').createRecord('message', {
+                id: Math.floor(Math.random()*100)+7,
+                body: body,
+                author: 'me',
+                date: new Date()
+            });
+            var feed = this.get('controllers.publicIndex.content');
+            feed.get('messages').addObject(message);
+
+            this.set('newMessage', '');
         }
     }
 });
