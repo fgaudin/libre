@@ -8,11 +8,11 @@ Ember.Application.initializer({
     name: "socket",
     initialize: function(container, application) {
         var store = container.lookup('store:main');
-        store.push('feed', {id: 'friends', messages: []});
-        store.push('feed', {id: 'public', messages: []});
+        //store.push('feed', {id: 'friends', messages: []});
+        //store.push('feed', {id: 'public', messages: []});
         if ("WebSocket" in window) {
             console.log("WebSocket is supported by your Browser!");
-            App.ws = new WebSocket("ws://localhost:8888/socket/");
+            App.ws = new WebSocket("ws://localhost:8888/socket");
             App.ws.onopen = function() {
                 App.ws.send("Message to send");
             };
@@ -53,35 +53,33 @@ App.Router.map(function () {
   });
 });
 
-App.Feed = DS.Model.extend({
+/*App.Feed = DS.Model.extend({
     messages: DS.hasMany('message', {async:true})
-});
+});*/
 
 App.Message = DS.Model.extend({
   body: DS.attr('string'),
   author: DS.attr('string'),
   date: DS.attr('date'),
+  likes: DS.attr('number'),
   liked: DS.attr('boolean'),
-
-  feed: DS.belongsTo('feed'),
+  scope: DS.attr('string'),
+  //scope: DS.belongsTo('feed'),
 
   formatedDate: function() {
-    return this.get('date').toLocaleString();
+      if (this.get('date')) {
+          return this.get('date').toLocaleString();
+      }
+      return '';
   }.property('date')
-});
-
-App.LibreIndexRoute = Ember.Route.extend({
-    model: function () {
-        return this.store.find('feed');
-    }
 });
 
 App.LibreIndexController = Ember.ArrayController.extend({
     friends: function(){
-        return this.store.find('feed', 'friends');
+        return this.store.find('message', {scope: 'friends'});
     }.property(),
     public: function(){
-        return this.store.find('feed', 'public');
+        return this.store.find('message', {scope: 'public'});
     }.property()
 });
 
@@ -96,34 +94,26 @@ App.LibreLoginRoute = Ember.Route.extend({
 
 App.FriendsIndexRoute = Ember.Route.extend({
     model: function () {
-        return this.store.find('feed', "friends");
+        return this.store.find('message', {scope: 'friends'});
     }
 });
 
 App.PublicIndexRoute = Ember.Route.extend({
     model: function () {
-        return this.store.find('feed', "public");
+        return this.store.find('message', {scope: 'public'});
     }
 });
 
 App.FriendCreateController = Ember.Controller.extend({
-    needs: ['friendsIndex'],
     actions: {
         create: function () {
           var body = this.get('newMessage');
           if (!body.trim()) { return; }
 
-          var payload = {
-              type:'friend_message',
-          };
           var message = this.get('store').createRecord('message', {
               body: body,
-              author: 'me',
-              date: new Date()
+              scope: 'friends'
           });
-          var feed = this.get('controllers.friendsIndex.content');
-          feed.get('messages').addObject(message);
-
           message.save();
 
           this.set('newMessage', '');
@@ -132,20 +122,16 @@ App.FriendCreateController = Ember.Controller.extend({
 });
 
 App.PublicCreateController = Ember.Controller.extend({
-    needs: ['publicIndex'],
     actions: {
         create: function () {
             var body = this.get('newMessage');
             if (!body.trim()) { return; }
 
             var message = this.get('store').createRecord('message', {
-                id: Math.floor(Math.random()*100)+7,
                 body: body,
-                author: 'me',
-                date: new Date()
+                scope: 'public'
             });
-            var feed = this.get('controllers.publicIndex.content');
-            feed.get('messages').addObject(message);
+            message.save();
 
             this.set('newMessage', '');
         }

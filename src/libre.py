@@ -1,6 +1,6 @@
 from tornado.options import define, parse_command_line, options
 from index.handlers import IndexHandler
-from message.handlers import FeedHandler, MessageHandler
+from message.handlers import MessageHandler
 from websocket.handlers import WebSocketHandler
 from tornado import web, ioloop
 from auth.handlers import LoginHandler
@@ -15,7 +15,6 @@ def main():
             (r"/", IndexHandler),
             (r"/login", LoginHandler),
             (r"/socket", WebSocketHandler),
-            (r"/feeds", FeedHandler),
             (r"/messages", MessageHandler),
             (r"/messages/([0-9]+)", MessageHandler),
             ],

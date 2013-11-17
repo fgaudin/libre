@@ -31,7 +31,7 @@
         </script>
 
         <script type="text/x-handlebars" data-template-name="feed">
-            {{!#each messages}}
+            {{!#each}}
                 {{! render "message" this}}
             {{!/each}}
         </script>
@@ -43,7 +43,7 @@
                     <div class="message-to-friend">
                         {{! render "friend/create"}}
                     </div>
-                    {{! render "feed" this}}
+                    {{! render "feed" this }}
                 </div>
             </div>
         </script>

@@ -13,10 +13,11 @@ class UserManager:
     def find(self, token=None, uid=None):
         connection = Redis.get_connection()
         if token:
-            uid = connection.get('t:%s' % token.decode())
-        user = connection.get('u:%s' % uid.decode())
-        if user:
-            return User(uid, **json_decode(user))
+            uid = connection.get('t:%s' % token).decode()
+        if uid:
+            user = connection.get('u:%s' % uid)
+            if user:
+                return User(uid, **json_decode(user))
         return None
 
 
@@ -40,6 +41,9 @@ class User:
 
     def authenticate(self, token):
         connection = Redis.get_connection()
-        connection.setex('t:%s' % token, 3600, self.uid.decode())
+        connection.setex('t:%s' % token, 3600, self.uid)
+
+    def get_friends(self):
+        return (self.uid,)
 
     objects = UserManager()
