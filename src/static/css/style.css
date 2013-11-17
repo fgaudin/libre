@@ -44,17 +44,15 @@ a, a:hover {
 #main {
     padding-top: 45px;
 }
+.feed {
+    width: 445px;
+    margin: 0 auto;
+}
 .messages {
     background: #FFF;
     border: 1px solid #326342;
     border-radius: 5px;
     padding:10px;
-}
-.friend-feed {
-    margin-right: 5px;
-}
-.public-feed {
-    margin-left: 5px;
 }
 textarea {
     width: 100%;
