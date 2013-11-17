@@ -18,17 +18,8 @@ Ember.Application.initializer({
             };
             App.ws.onmessage = function (evt) {
                 var msg = JSON.parse(evt.data);
-                if (msg.type == 'feeds') {
-                    store.find('feed', 'friends').then(function(feed){
-                        msg.data.friends.forEach(function(message){
-                            feed.get('messages').addObject(store.push('message', message));
-                        });
-                    });
-                    store.find('feed', 'public').then(function(feed){
-                        msg.data.public.forEach(function(message){
-                            feed.get('messages').addObject(store.push('message', message));
-                        });
-                    });
+                if (msg.type == 'message') {
+                    store.push('message', msg.data);
                 }
             };
             App.ws.onclose = function() {
@@ -53,10 +44,6 @@ App.Router.map(function () {
   });
 });
 
-/*App.Feed = DS.Model.extend({
-    messages: DS.hasMany('message', {async:true})
-});*/
-
 App.Message = DS.Model.extend({
   body: DS.attr('string'),
   author: DS.attr('string'),
@@ -73,6 +60,9 @@ App.Message = DS.Model.extend({
       return '';
   }.property('date')
 });
+
+//App.FriendMessage = App.Message.extend();
+//App.PublicMessage = App.Message.extend();
 
 App.LibreIndexController = Ember.ArrayController.extend({
     friends: function(){

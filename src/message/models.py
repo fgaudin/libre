@@ -1,5 +1,6 @@
 from tornado.escape import json_encode, json_decode
 from data import Redis
+from websocket.manager import Manager
 
 FRIEND_FEED_UNREAD = 'ffu'
 FRIEND_FEED_READ = 'ffr'
@@ -66,9 +67,11 @@ class Message:
 
     def push_to_friends(self, user):
         friends = user.get_friends()
+        connection = Redis.get_connection()
+        manager = Manager.get_manager()
         for friend in friends:
-            connection = Redis.get_connection()
             connection.rpush('%s:%s' % (FRIEND_FEED_UNREAD, friend), self.id)
+            manager.send_message('message', self.to_dict(), friend)
 
     def push_to_public(self, user):
         friends = user.get_friends()
