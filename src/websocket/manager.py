@@ -30,7 +30,9 @@ class Manager:
         del self.sockets[socket]
 
     def get_sockets(self, user_uid):
-        return self.users[user_uid]
+        if user_uid in self.users:
+            return self.users[user_uid]
+        return []
 
     def get_user(self, socket):
         return self.sockets[socket]

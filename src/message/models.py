@@ -62,7 +62,7 @@ class Message:
         if not self.id:
             self.id = self._nextId()
             connection = Redis.get_connection()
-            connection.setex('m:%s' % self.id, 60, json_encode(self.to_dict()))
+            connection.setex('m:%s' % self.id, 600, json_encode(self.to_dict()))
 
     def push_to_friends(self, user):
         friends = user.get_friends()

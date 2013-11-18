@@ -2,6 +2,8 @@ from data import Redis
 from tornado.escape import json_encode, json_decode
 import hashlib
 
+FRIENDS = 'f'
+
 
 class UserManager:
     def create_user(self, uid, username, fullname):
@@ -46,7 +48,8 @@ class User:
         connection.setex('t:%s' % token, 3600, self.uid)
 
     def get_friends(self):
-        return (self.uid,)
+        connection = Redis.get_connection()
+        return [self.uid] + [friend.decode() for friend in connection.smembers("%s:%s" % (FRIENDS, self.uid))]
 
     def get_followers(self):
         return (self.uid,)
