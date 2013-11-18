@@ -115,6 +115,15 @@ App.LibreLoginRoute = Ember.Route.extend({
     }
 });
 
+App.UserFeedController = Ember.Controller.extend({
+    friends: function(){
+        return this.store.find('friendMessage');
+    }.property(),
+    public: function(){
+        return this.store.find('publicMessage');
+    }.property()
+});
+
 App.FriendsIndexRoute = Ember.Route.extend({
     model: function () {
         return this.store.find('friendMessage');
