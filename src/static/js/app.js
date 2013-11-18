@@ -12,7 +12,7 @@ Ember.Application.initializer({
         //store.push('feed', {id: 'public', messages: []});
         if ("WebSocket" in window) {
             console.log("WebSocket is supported by your Browser!");
-            App.ws = new WebSocket("ws://localhost:8888/socket");
+            App.ws = new WebSocket("ws://" + window.location.host + "/socket");
             App.ws.onopen = function() {
                 App.ws.send("Message to send");
             };
@@ -103,6 +103,11 @@ App.PublicIndexRoute = Ember.Route.extend({
     model: function () {
         return this.store.find('publicMessage');
     }
+});
+
+App.PublicIndexController = Ember.ArrayController.extend({
+    sortProperties: ['id'],
+    sortAscending: false
 });
 
 App.FriendCreateController = Ember.Controller.extend({
