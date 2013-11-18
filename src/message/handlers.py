@@ -1,4 +1,4 @@
-from tornado.escape import json_encode, json_decode
+from tornado.escape import json_encode, json_decode, linkify
 from tornado.web import authenticated
 from web import BaseHandler
 from message.models import Message
@@ -33,7 +33,9 @@ class MessageHandler(BaseHandler):
         user = self.get_current_user()
         data = json_decode(self.request.body)
         message = data['message']
-        message['author'] = user.fullname
+        message['author_fullname'] = user.fullname
+        message['author_username'] = user.username
+        message['body'] = linkify(message['body'])
         del message['liked']
         msg_obj = Message(**message)
         msg_obj.save()

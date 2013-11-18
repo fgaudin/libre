@@ -76,7 +76,7 @@
                 <div class="author-avatar"><img src="https://pbs.twimg.com/profile_images/1257042635/alf_bigger.JPG" /></div>
                 <div class="message-content">
                     <div class="date">{{!#link-to 'message' id}} {{!formatedDate}}{{!/link-to}}</div>
-                    <div class="author"><a href="#">{{!author}}</a></div>
+                    <div class="author">{{!#link-to 'user.feed' author_username}}{{!author_fullname}}{{!/link-to}}</a></div>
                     <div class="content">
                         {{!body}}
                     </div>
@@ -100,12 +100,20 @@
         <script type="text/x-handlebars" data-template-name="libre">
         <header id="header">
             <div class="pure-g menu">
-                <div class="pure-u-2-3">
+                <div class="pure-u-1-3">
                     <h1>{{!#link-to 'libre'}}Libre{{!/link-to}}</h1>
                 </div>
-                <div class="pure-u-1-3 login">
-                       {{!#link-to 'libre.login'}}Login{{!/link-to}}
-                   </div>
+                <div class="pure-u-2-3 login">
+                    {{!#if authenticated}}
+                    <input type="submit" value="Logout" class="pure-button">
+                    {{!else}}
+                    <form class="pure-form">
+                        {{!input value=email size="15" placeholder="Email"}}
+                        {{!input value=password type="password" size="15" placeholder="Password"}}
+                        <input {{!action 'login'}} type="submit" value="Login" class="pure-button">
+                    </form>
+                    {{!/if}}
+                </div>
             </div>
         </header>
         <section id="main">

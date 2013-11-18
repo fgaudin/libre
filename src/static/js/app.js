@@ -1,5 +1,6 @@
 window.App = Ember.Application.create({
-    LOG_TRANSITIONS: true
+    LOG_TRANSITIONS: true,
+    LOG_TRANSITIONS_INTERNAL: true
 });
 
 //App.ApplicationAdapter = DS.FixtureAdapter.extend();
@@ -40,6 +41,9 @@ Ember.Application.initializer({
 App.Router.map(function () {
   this.resource('libre', { path: '/' }, function(){
       this.route('login',  { path: 'login' });
+      this.resource("user", { path: "user" }, function(){
+          this.route('feed',  { path: ':username' });
+      });
       this.resource("friends", { path: "friends" }, function(){
           this.route('create',  { path: 'new' });
       });
@@ -52,7 +56,8 @@ App.Router.map(function () {
 
 App.Message = DS.Model.extend({
   body: DS.attr('string'),
-  author: DS.attr('string'),
+  author_username: DS.attr('string'),
+  author_fullname: DS.attr('string'),
   date: DS.attr('date'),
   likes: DS.attr('number'),
   liked: DS.attr('boolean'),
@@ -69,6 +74,28 @@ App.Message = DS.Model.extend({
 
 App.FriendMessage = App.Message.extend();
 App.PublicMessage = App.Message.extend();
+
+App.LibreController = Ember.Controller.extend({
+    authenticated: false,
+    actions: {
+       login: function(){
+           var email = this.get('email');
+           var password = this.get('password');
+           var ctrl = this;
+           App.$.post( "/login",
+           {email: email, password: password},
+           function(data) {
+               console.log(data);
+               if (data.authenticated) {
+                   ctrl.set('email', '');
+                   ctrl.set('password', '');
+                   ctrl.set('authenticated', true);
+               }
+           },
+           'json');
+        }
+    }
+});
 
 App.LibreIndexController = Ember.ArrayController.extend({
     friends: function(){
