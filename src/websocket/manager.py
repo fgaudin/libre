@@ -13,14 +13,21 @@ class Manager:
         self.sockets = {}
 
     def register(self, user_uid, socket):
-        self.users[user_uid] = socket
+        if not user_uid in self.users:
+            self.users[user_uid] = []
+        self.users[user_uid].append(socket)
         self.sockets[socket] = user_uid
 
     def unregister(self, socket):
-        del self.users[self.sockets[socket]]
+        user = self.get_user(socket)
+        for key, s in enumerate(self.users[user]):
+            if socket == s:
+                del self.users[user][key]
+        if not len(self.users[user]):
+            del self.users[user]
         del self.sockets[socket]
 
-    def get_socket(self, user_uid):
+    def get_sockets(self, user_uid):
         return self.users[user_uid]
 
     def get_user(self, socket):
@@ -28,4 +35,5 @@ class Manager:
 
     def send_message(self, type, content, user_uid):
         message = {'type': type, 'data': content}
-        self.get_socket(user_uid).write_message(json_encode(message))
+        for socket in self.get_sockets(user_uid):
+            socket.write_message(json_encode(message))

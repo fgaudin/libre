@@ -15,6 +15,8 @@ def main():
             (r"/", IndexHandler),
             (r"/login", LoginHandler),
             (r"/socket", WebSocketHandler),
+            (r"/friendMessages", MessageHandler, {'scope': 'friends'}),
+            (r"/publicMessages", MessageHandler, {'scope': 'public'}),
             (r"/messages", MessageHandler),
             (r"/messages/([0-9]+)", MessageHandler),
             ],

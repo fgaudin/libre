@@ -5,6 +5,9 @@ from message.models import Message
 
 
 class MessageHandler(BaseHandler):
+    def initialize(self, scope=None):
+        self.scope = scope
+
     @authenticated
     def get(self, message_id=None):
         user = self.get_current_user()
@@ -13,13 +16,15 @@ class MessageHandler(BaseHandler):
             response = {'message': message.to_dict()}
             self.write(json_encode(response))
         else:
-            scope = self.get_argument('scope', None)
             messages = []
-            if scope == 'friends':
+            type = 'message'
+            if self.scope == 'friends':
+                type = 'friendMessage'
                 messages = Message.objects.get_friends_feed(user)
-            elif scope == 'public':
+            elif self.scope == 'public':
+                type = 'publicMessage'
                 messages = Message.objects.get_public_feed(user)
-            response = {'message': [m.to_dict() for m in messages]}
+            response = {type: [m.to_dict() for m in messages]}
 
         self.write(json_encode(response))
 
@@ -34,5 +39,5 @@ class MessageHandler(BaseHandler):
         msg_obj.save()
         msg_obj.push(user)
 
-        response = {'message': msg_obj.to_dict()}
+        response = {'friendMessage': msg_obj.to_dict()}
         self.write(json_encode(response))

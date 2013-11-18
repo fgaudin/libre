@@ -19,7 +19,12 @@ Ember.Application.initializer({
             App.ws.onmessage = function (evt) {
                 var msg = JSON.parse(evt.data);
                 if (msg.type == 'message') {
-                    store.push('message', msg.data);
+                    if (msg.data.scope == 'friends') {
+                        store.push('friendMessage', msg.data);
+                    } else if (msg.data.scope == 'public') {
+                        store.push('publicMessage', msg.data);
+                    }
+
                 }
             };
             App.ws.onclose = function() {
@@ -61,15 +66,15 @@ App.Message = DS.Model.extend({
   }.property('date')
 });
 
-//App.FriendMessage = App.Message.extend();
-//App.PublicMessage = App.Message.extend();
+App.FriendMessage = App.Message.extend();
+App.PublicMessage = App.Message.extend();
 
 App.LibreIndexController = Ember.ArrayController.extend({
     friends: function(){
-        return this.store.find('message', {scope: 'friends'});
+        return this.store.find('friendMessage');
     }.property(),
     public: function(){
-        return this.store.find('message', {scope: 'public'});
+        return this.store.find('publicMessage');
     }.property()
 });
 
@@ -84,13 +89,18 @@ App.LibreLoginRoute = Ember.Route.extend({
 
 App.FriendsIndexRoute = Ember.Route.extend({
     model: function () {
-        return this.store.find('message', {scope: 'friends'});
+        return this.store.find('friendMessage');
     }
+});
+
+App.FriendsIndexController = Ember.ArrayController.extend({
+    sortProperties: ['id'],
+    sortAscending: false
 });
 
 App.PublicIndexRoute = Ember.Route.extend({
     model: function () {
-        return this.store.find('message', {scope: 'public'});
+        return this.store.find('publicMessage');
     }
 });
 

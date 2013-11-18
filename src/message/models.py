@@ -1,6 +1,7 @@
 from tornado.escape import json_encode, json_decode
 from data import Redis
 from websocket.manager import Manager
+import datetime
 
 FRIEND_FEED_UNREAD = 'ffu'
 FRIEND_FEED_READ = 'ffr'
@@ -39,12 +40,12 @@ class MessageManager:
 
 
 class Message:
-    def __init__(self, scope, body, author, date, likes, id=None):
+    def __init__(self, scope, body, author, date=None, likes=0, id=None):
         self.id = id
         self.scope = scope
         self.body = body
         self.author = author
-        self.date = date
+        self.date = date or datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.likes = likes
 
     def to_dict(self):
@@ -63,7 +64,7 @@ class Message:
         if not self.id:
             self.id = self._nextId()
             connection = Redis.get_connection()
-            connection.setex('m:%s' % self.id, 3600, json_encode(self.to_dict()))
+            connection.setex('m:%s' % self.id, 60, json_encode(self.to_dict()))
 
     def push_to_friends(self, user):
         friends = user.get_friends()
