@@ -17,6 +17,7 @@ Ember.Application.initializer({
                 App.ws.send("Message to send");
             };
             App.ws.onmessage = function (evt) {
+                console.log('received: ' + evt.data)
                 var msg = JSON.parse(evt.data);
                 if (msg.type == 'message') {
                     if (msg.data.scope == 'friends') {

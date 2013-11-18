@@ -46,4 +46,7 @@ class User:
     def get_friends(self):
         return (self.uid,)
 
+    def get_followers(self):
+        return (self.uid,)
+
     objects = UserManager()

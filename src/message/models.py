@@ -71,10 +71,12 @@ class Message:
             manager.send_message('message', self.to_dict(), friend)
 
     def push_to_public(self, user):
-        friends = user.get_friends()
-        for friend in friends:
-            connection = Redis.get_connection()
-            connection.rpush('%s:%s' % (PUBLIC_FEED, friend), self.id)
+        followers = user.get_followers()
+        connection = Redis.get_connection()
+        manager = Manager.get_manager()
+        for follower in followers:
+            connection.rpush('%s:%s' % (PUBLIC_FEED, follower), self.id)
+            manager.send_message('message', self.to_dict(), follower)
 
     def push(self, user):
         if self.scope == 'friends':
