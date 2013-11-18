@@ -65,17 +65,24 @@ class Message:
             connection.setex('m:%s' % self.id, 600, json_encode(self.to_dict()))
 
     def push_to_friends(self, user):
-        friends = user.get_friends()
         connection = Redis.get_connection()
         manager = Manager.get_manager()
+
+        friends = user.get_friends()
         for friend in friends:
             connection.rpush('%s:%s' % (FRIEND_FEED, friend), self.id)
             manager.send_message('message', self.to_dict(), friend)
 
     def push_to_public(self, user):
-        followers = user.get_followers()
         connection = Redis.get_connection()
         manager = Manager.get_manager()
+
+        friends = user.get_friends()
+        for friend in friends:
+            connection.rpush('%s:%s' % (PUBLIC_FEED, friend), self.id)
+            manager.send_message('message', self.to_dict(), friend)
+
+        followers = user.get_followers()
         for follower in followers:
             connection.rpush('%s:%s' % (PUBLIC_FEED, follower), self.id)
             manager.send_message('message', self.to_dict(), follower)

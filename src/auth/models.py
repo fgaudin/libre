@@ -3,6 +3,7 @@ from tornado.escape import json_encode, json_decode
 import hashlib
 
 FRIENDS = 'f'
+FOLLOWERS = 'fw'
 
 
 class UserManager:
@@ -52,6 +53,7 @@ class User:
         return [self.uid] + [friend.decode() for friend in connection.smembers("%s:%s" % (FRIENDS, self.uid))]
 
     def get_followers(self):
-        return (self.uid,)
+        connection = Redis.get_connection()
+        return [self.uid] + [follower.decode() for follower in connection.smembers("%s:%s" % (FOLLOWERS, self.uid))]
 
     objects = UserManager()
