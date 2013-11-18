@@ -1,4 +1,6 @@
 from tornado.escape import json_encode
+
+
 class Manager:
     manager = None
 

@@ -3,10 +3,8 @@ from data import Redis
 from websocket.manager import Manager
 import datetime
 
-FRIEND_FEED_UNREAD = 'ffu'
-FRIEND_FEED_READ = 'ffr'
-PUBLIC_FEED_UNREAD = 'pfu'
-PUBLIC_FEED_READ = 'pfr'
+FRIEND_FEED = 'ff'
+PUBLIC_FEED = 'pf'
 
 
 class MessageManager:
@@ -27,15 +25,13 @@ class MessageManager:
     def get_friends_feed(self, user):
         connection = Redis.get_connection()
         msgs = []
-        msgs.extend(connection.lrange('%s:%s' % (FRIEND_FEED_UNREAD, user.uid), 0, -1))
-        msgs.extend(connection.lrange('%s:%s' % (FRIEND_FEED_READ, user.uid), 0, -1))
+        msgs.extend(connection.lrange('%s:%s' % (FRIEND_FEED, user.uid), 0, -1))
         return self.mget(*msgs)
 
     def get_public_feed(self, user):
         connection = Redis.get_connection()
         msgs = []
-        msgs.extend(connection.lrange('%s:%s' % (PUBLIC_FEED_UNREAD, user.uid), 0, -1))
-        msgs.extend(connection.lrange('%s:%s' % (PUBLIC_FEED_READ, user.uid), 0, -1))
+        msgs.extend(connection.lrange('%s:%s' % (PUBLIC_FEED, user.uid), 0, -1))
         return self.mget(*msgs)
 
 
@@ -71,14 +67,14 @@ class Message:
         connection = Redis.get_connection()
         manager = Manager.get_manager()
         for friend in friends:
-            connection.rpush('%s:%s' % (FRIEND_FEED_UNREAD, friend), self.id)
+            connection.rpush('%s:%s' % (FRIEND_FEED, friend), self.id)
             manager.send_message('message', self.to_dict(), friend)
 
     def push_to_public(self, user):
         friends = user.get_friends()
         for friend in friends:
             connection = Redis.get_connection()
-            connection.rpush('%s:%s' % (PUBLIC_FEED_UNREAD, friend), self.id)
+            connection.rpush('%s:%s' % (PUBLIC_FEED, friend), self.id)
 
     def push(self, user):
         if self.scope == 'friends':
