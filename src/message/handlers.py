@@ -24,6 +24,8 @@ class MessageHandler(BaseHandler):
             elif self.scope == 'public':
                 type = 'publicMessage'
                 messages = Message.objects.get_public_feed(user)
+            else:
+                messages = Message.objects.get_friends_feed(user) + Message.objects.get_public_feed(user)
             response = {type: [m.to_dict() for m in messages]}
 
         self.write(json_encode(response))

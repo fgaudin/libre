@@ -16,7 +16,9 @@ class UserManager:
     def find(self, token=None, uid=None, raw_uid=None):
         connection = Redis.get_connection()
         if token:
-            uid = connection.get('t:%s' % token).decode()
+            uid = connection.get('t:%s' % token)
+            if uid:
+                uid = uid.decode()
         if raw_uid:
             uid = hashlib.sha224(raw_uid.encode('utf-8')).hexdigest()
         if uid:
