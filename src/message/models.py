@@ -37,7 +37,7 @@ class MessageManager:
 
 
 class Message:
-    def __init__(self, scope, body, author_username, author_fullname, date=None, likes=0, id=None):
+    def __init__(self, scope, body, author_username, author_fullname, date=None, likes=0, id=None, *args, **kwargs):
         self.id = id
         self.scope = scope
         self.body = body

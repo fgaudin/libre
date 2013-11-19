@@ -99,6 +99,15 @@ App.LibreRoute = Ember.Route.extend({
     }
 });
 
+App.LibreLoginRoute = Ember.Route.extend({
+    beforeModel: function() {
+        var route = this;
+        App.$.post( "/login", function(data){
+            route.transitionTo('libre');
+        });
+    }
+});
+
 App.LibreIndexRoute = Ember.Route.extend({
     model: function(){
         return this.modelFor('libre');
@@ -110,41 +119,32 @@ App.LibreIndexController = Ember.ArrayController.extend({
     sortAscending: false,
     friends: function(){
         return this.filterBy('scope', 'friends');
-    }.property(),
+    }.property('model.@each'),
     public: function(){
         return this.filterBy('scope', 'public');
-    }.property()
+    }.property('model.@each')
 });
 
 App.FriendsIndexRoute = Ember.Route.extend({
     model: function () {
-        return this.modelFor('libre').filterBy('scope', 'friends');
+        return this.modelFor('libre');
     }
 });
 
 App.FriendsIndexController = Ember.ArrayController.extend({
     sortProperties: ['id'],
-    sortAscending: false
+    sortAscending: false,
 });
 
 App.PublicIndexRoute = Ember.Route.extend({
     model: function () {
-        return this.modelFor('libre').filterBy('scope', 'public');
+        return this.modelFor('libre');
     }
 });
 
 App.PublicIndexController = Ember.ArrayController.extend({
     sortProperties: ['id'],
     sortAscending: false
-});
-
-App.LibreLoginRoute = Ember.Route.extend({
-    beforeModel: function() {
-        var route = this;
-        App.$.post( "/login", function(data){
-            route.transitionTo('libre');
-        });
-    }
 });
 
 App.UserFeedController = Ember.Controller.extend({
@@ -162,11 +162,10 @@ App.FriendCreateController = Ember.Controller.extend({
           var body = this.get('newMessage');
           if (!body.trim()) { return; }
 
-          var message = this.get('store').createRecord('message', {
+          var message = App.$.post('/messages', {
               body: body,
               scope: 'friends'
           });
-          message.save();
 
           this.set('newMessage', '');
         }
@@ -179,11 +178,10 @@ App.PublicCreateController = Ember.Controller.extend({
             var body = this.get('newMessage');
             if (!body.trim()) { return; }
 
-            var message = this.get('store').createRecord('message', {
+            var message = App.$.post('/messages', {
                 body: body,
                 scope: 'public'
             });
-            message.save();
 
             this.set('newMessage', '');
         }
