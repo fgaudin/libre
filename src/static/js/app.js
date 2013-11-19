@@ -37,8 +37,10 @@ App.Router.map(function () {
   this.resource('libre', { path: '/' }, function(){
       this.route('login',  { path: 'login' });
       this.resource("user", { path: "user" }, function(){
-          this.resource("user_friends", { path: "friends" }),
-          this.resource("user_public", { path: "public" })
+          this.resource('user_profile',  { path: ':username' }, function(){
+              this.resource("user_friends", { path: "friends" }),
+              this.resource("user_public", { path: "public" })
+          });
       });
       this.resource("friends", { path: "friends" }, function(){
           this.route('create',  { path: 'new' });
@@ -153,13 +155,35 @@ App.PublicIndexController = Ember.ArrayController.extend({
     }.property('model.@each')
 });
 
-App.UserFeedController = Ember.Controller.extend({
+App.UserProfileRoute = Ember.Route.extend({
+    model: function (params) {
+        console.log(params.username);
+        this.set('username', params.username);
+        return this.modelFor('libre');
+    },
+    setupController: function(controller, model) {
+        this._super(controller, model);
+        this.controllerFor('userProfileIndex').set('username', this.get('username'));
+        this.controllerFor('userProfileIndex').set('model', model);
+    }
+});
+
+App.UserProfileRouteIndex  = Ember.Route.extend({
+    model: function () {
+        return this.modelFor('libre');
+    }
+});
+
+App.UserProfileIndexController = Ember.ArrayController.extend({
+    sortProperties: ['id'],
+    sortAscending: false,
     friends: function(){
-        return this.store.find('friendMessage');
-    }.property(),
+        console.log("-> " + this.get('username'));
+        return this.filterBy('scope', 'friends').filterBy('author_username', this.get('username'));
+    }.property('model.@each'),
     public: function(){
-        return this.store.find('publicMessage');
-    }.property()
+        return this.filterBy('scope', 'public').filterBy('author_username', this.get('username'));
+    }.property('model.@each')
 });
 
 App.FriendCreateController = Ember.Controller.extend({
