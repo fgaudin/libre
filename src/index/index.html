@@ -43,7 +43,7 @@
                     <div class="message-to-friend">
                         {{! render "friend/create"}}
                     </div>
-                    {{! render "feed" this }}
+                    {{! render "feed" friends }}
                 </div>
             </div>
         </script>
@@ -55,7 +55,7 @@
                     <div class="message-to-public">
                         {{! render "public/create"}}
                     </div>
-                    {{! render "feed" this }}
+                    {{! render "feed" public }}
                 </div>
             </div>
         </script>
@@ -63,10 +63,10 @@
         <script type="text/x-handlebars" data-template-name="libre/index">
         <div class="pure-g-r feeds">
             <div class="pure-u-1-2">
-                {{! render "friends/index" friends }}
+                {{! render "friends/index" this }}
             </div>
             <div class="pure-u-1-2">
-                {{! render "public/index" public }}
+                {{! render "public/index" this }}
             </div>
         </div>
         </script>

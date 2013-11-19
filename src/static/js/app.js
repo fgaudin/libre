@@ -134,6 +134,9 @@ App.FriendsIndexRoute = Ember.Route.extend({
 App.FriendsIndexController = Ember.ArrayController.extend({
     sortProperties: ['id'],
     sortAscending: false,
+    friends: function(){
+        return this.filterBy('scope', 'friends');
+    }.property('model.@each')
 });
 
 App.PublicIndexRoute = Ember.Route.extend({
@@ -144,7 +147,10 @@ App.PublicIndexRoute = Ember.Route.extend({
 
 App.PublicIndexController = Ember.ArrayController.extend({
     sortProperties: ['id'],
-    sortAscending: false
+    sortAscending: false,
+    public: function(){
+        return this.filterBy('scope', 'public');
+    }.property('model.@each')
 });
 
 App.UserFeedController = Ember.Controller.extend({
