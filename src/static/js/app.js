@@ -127,34 +127,6 @@ App.LibreIndexController = Ember.ArrayController.extend({
     }.property('model.@each')
 });
 
-App.FriendsIndexRoute = Ember.Route.extend({
-    model: function () {
-        return this.modelFor('libre');
-    }
-});
-
-App.FriendsIndexController = Ember.ArrayController.extend({
-    sortProperties: ['id'],
-    sortAscending: false,
-    friends: function(){
-        return this.filterBy('scope', 'friends');
-    }.property('model.@each')
-});
-
-App.PublicIndexRoute = Ember.Route.extend({
-    model: function () {
-        return this.modelFor('libre');
-    }
-});
-
-App.PublicIndexController = Ember.ArrayController.extend({
-    sortProperties: ['id'],
-    sortAscending: false,
-    public: function(){
-        return this.filterBy('scope', 'public');
-    }.property('model.@each')
-});
-
 App.UserProfileRoute = Ember.Route.extend({
     model: function (params) {
         console.log(params.username);
@@ -180,10 +152,10 @@ App.UserProfileIndexController = Ember.ArrayController.extend({
     friends: function(){
         console.log("-> " + this.get('username'));
         return this.filterBy('scope', 'friends').filterBy('author_username', this.get('username'));
-    }.property('model.@each'),
+    }.property('model.@each', 'username'),
     public: function(){
         return this.filterBy('scope', 'public').filterBy('author_username', this.get('username'));
-    }.property('model.@each')
+    }.property('model.@each', 'username')
 });
 
 App.FriendCreateController = Ember.Controller.extend({
