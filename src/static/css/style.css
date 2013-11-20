@@ -73,8 +73,19 @@ textarea {
 .pure-button {
     font-size: 75%;
 }
+.pure-button-large {
+    font-size: 110%;
+}
 .pure-button-primary{
     background: #326342;
+}
+.pure-button-success {
+    background: #326342;
+    color: #FFF;
+}
+.pure-button-warning {
+    background: rgb(202, 60, 60);
+    color: #FFF;
 }
 .post {
     text-align: right;
@@ -123,12 +134,15 @@ textarea {
 .author-header {
     max-width: 900px;
     margin: 20px auto;
-    font-size: 2.6em;
 }
 .author-name {
     padding-left: 65px;
-    font-weight: bold;
     color: #326342;
+    font-weight: bold;
+    font-size: 2em;
+}
+.author-actions {
+    clear: both;
 }
 .new-message {
     width: 423px;

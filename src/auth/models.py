@@ -2,7 +2,11 @@ from data import Redis
 from tornado.escape import json_encode, json_decode
 import hashlib
 
+TOKEN = 't'
+USER = 'u'
+REVERSE_USER = 'ru'
 FRIENDS = 'f'
+FRIEND_REQUESTS = 'fr'
 FOLLOWERS = 'fw'
 
 
@@ -16,7 +20,7 @@ class UserManager:
     def find(self, token=None, uid=None, raw_uid=None, username=None):
         connection = Redis.get_connection()
         if token:
-            uid = connection.get('t:%s' % token)
+            uid = connection.get('%s:%s' % (TOKEN, token))
             if uid:
                 uid = uid.decode()
         if raw_uid:
@@ -24,12 +28,12 @@ class UserManager:
 
         user = None
         if uid:
-            user = connection.get('u:%s' % uid)
+            user = connection.get('%s:%s' % (USER, uid))
         elif username:
-            user = connection.get('ru:%s' % username)
+            user = connection.get('%s:%s' % (REVERSE_USER, username))
 
         if user:
-            return User(uid, **json_decode(user))
+            return User(**json_decode(user))
 
         return None
 
@@ -46,8 +50,7 @@ class User:
         self.pic = pic
 
     def to_json(self):
-        return json_encode({
-                            'username': self.username,
+        return json_encode({'username': self.username,
                             'fullname': self.fullname,
                             'pic': self.pic})
 
@@ -59,18 +62,67 @@ class User:
                 'pic': self.pic
                 }
 
+    def _to_db(self):
+        return {'uid': self.uid,
+                'username': self.username,
+                'fullname': self.fullname,
+                'pic': self.pic}
+
     def save(self):
         connection = Redis.get_connection()
-        if not connection.setnx('u:%s' % self.uid, self.to_json()):
+        if not connection.setnx('%s:%s' % (USER, self.uid),
+                                json_encode(self._to_db())):
             raise UserAlreadyExists()
+
+        connection.set('%s:%s' % (REVERSE_USER, self.username,
+                                  json_encode(self._to_db())))
 
     def authenticate(self, token):
         connection = Redis.get_connection()
-        connection.setex('t:%s' % token, 3600, self.uid)
+        connection.setex('%s:%s' % (TOKEN, token), 3600, self.uid)
+
+    def is_friend(self, current_user):
+        connection = Redis.get_connection()
+        return connection.sismember('%s:%s' % (FRIENDS, self.uid), current_user.uid)
+
+    def is_requested_by(self, current_user):
+        connection = Redis.get_connection()
+        return connection.sismember('%s:%s' % (FRIEND_REQUESTS, self.uid), current_user.uid)
 
     def get_friends(self):
         connection = Redis.get_connection()
         return [self.uid] + [friend.decode() for friend in connection.smembers("%s:%s" % (FRIENDS, self.uid))]
+
+    def add_request_from(self, current_user):
+        connection = Redis.get_connection()
+        connection.sadd("%s:%s" % (FRIEND_REQUESTS, self.uid), current_user.uid)
+
+    def cancel_request_from(self, current_user):
+        connection = Redis.get_connection()
+        connection.srem("%s:%s" % (FRIEND_REQUESTS, self.uid), current_user.uid)
+
+    def accept_request_from(self, user):
+        connection = Redis.get_connection()
+        connection.sadd("%s:%s" % (FRIENDS, self.uid), user.uid)
+        connection.sadd("%s:%s" % (FRIENDS, user.uid), self.uid)
+        self.cancel_request_from(user)
+
+    def unfriend(self, current_user):
+        connection = Redis.get_connection()
+        connection.srem("%s:%s" % (FRIENDS, self.uid), current_user.uid)
+        connection.srem("%s:%s" % (FRIENDS, current_user.uid), self.uid)
+
+    def follow(self, current_user):
+        connection = Redis.get_connection()
+        connection.sadd("%s:%s" % (FOLLOWERS, self.uid), current_user.uid)
+
+    def unfollow(self, current_user):
+        connection = Redis.get_connection()
+        connection.srem("%s:%s" % (FOLLOWERS, self.uid), current_user.uid)
+
+    def is_followed_by(self, current_user):
+        connection = Redis.get_connection()
+        return connection.sismember('%s:%s' % (FOLLOWERS, self.uid), current_user.uid)
 
     def get_followers(self):
         connection = Redis.get_connection()

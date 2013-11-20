@@ -56,6 +56,22 @@ App.User = DS.Model.extend({
     username: DS.attr('string'),
     fullname: DS.attr('string'),
     pic: DS.attr('string'),
+    friend: DS.attr('boolean'),
+    friend_requested: DS.attr('boolean'),
+    friend_waiting: DS.attr('boolean'),
+    followed: DS.attr('boolean'),
+
+    friend_state: function(){
+        if (this.get('friend')) {
+            return 'Friends';
+        } else if (this.get('friend_requested')) {
+            return 'Requested';
+        } else if (this.get('friend_waiting')) {
+            return 'Accept request';
+        } else {
+            return 'Add';
+        }
+    }.property('friend', 'friend_requested', 'friend_waiting')
 });
 
 App.Message = DS.Model.extend({
@@ -157,7 +173,67 @@ App.UserProfileIndexController = Ember.ArrayController.extend({
     }.property('model.@each', 'username'),
     public: function(){
         return this.filterBy('scope', 'public').filterBy('author_username', this.get('username'));
-    }.property('model.@each', 'username')
+    }.property('model.@each', 'username'),
+    actions: {
+        toggle_friend: function(){
+            var url = '/users/' + this.get('username');
+            var user = this.get('author');
+            var controller = this;
+            if (user.get('friend')) {
+                if (this.get('unfriending')) {
+                    App.$.post(url, {
+                        action: 'unfriend'
+                    }, function(response){
+                        if (response) {
+                            user.set('friend', response.friend)
+                            controller.set('unfriending', false);
+                        }
+                    }, 'json');
+                } else {
+                    this.set('unfriending', true);
+                }
+            } else  if (user.get('friend_requested')){
+                App.$.post(url, {
+                    action: 'cancel_friend_request'
+                }, function(response){
+                    if (response) {
+                        user.set('friend_requested', response.friend_requested)
+                    }
+                }, 'json');
+            } else if (user.get('friend_waiting')){
+                App.$.post(url, {
+                    action: 'accept_friend'
+                }, function(response){
+                    if (response) {
+                        user.set('friend', response.friend)
+                    }
+                }, 'json');
+            } else {
+                App.$.post(url, {
+                    action: 'request_friend'
+                }, function(response){
+                    if (response) {
+                        user.set('friend_requested', response.friend_requested)
+                    }
+                }, 'json');
+            }
+        },
+        toggle_follow: function(){
+            var url = '/users/' + this.get('username');
+            var user = this.get('author');
+            var action = 'follow';
+            if (user.get('followed')) {
+                action = 'unfollow';
+            }
+            App.$.post(url, {
+                action: action
+            }, function(response){
+                if (response) {
+                    user.set('followed', response.followed)
+                }
+            }, 'json');
+        }
+    }
 });
 
 App.FriendCreateController = Ember.Controller.extend({
