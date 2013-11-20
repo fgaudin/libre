@@ -71,7 +71,7 @@
                     <span class="fullname">{{! author.fullname }}</span> <span class="username">({{! author.username }})</span>
                 </div>
                 <div class="author-actions">
-                    <button {{!bind-attr class=":pure-button :pure-button-large author.friend:pure-button-success unfriending:pure-button-warning"}} {{!action 'toggle_friend'}}>{{!#if unfriending }}Confirm{{!else}}{{! author.friend_state }}{{!/if}}</button>
+                    <button {{!bind-attr class=":pure-button :pure-button-large author.friend:pure-button-success unfriending:pure-button-warning"}} {{!action 'toggle_friend'}}>{{!#if unfriending }}Unfriend?{{!else}}{{! author.friend_state }}{{!/if}}</button>
                     <button {{!bind-attr class=":pure-button :pure-button-large author.followed:pure-button-success"}} {{!action 'toggle_follow'}}>{{!#if author.followed }}Following{{!else}}Follow{{!/if}}</button>
                 </div>
             </div>
