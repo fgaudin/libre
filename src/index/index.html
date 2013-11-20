@@ -81,7 +81,11 @@
                 <div class="feed friend-feed">
                     <h2>Friends feed</h2>
                     <div class="messages">
+                        {{!# if author.friend }}
                         {{! feed-tpl messages=friends }}
+                        {{! else }}
+                        You need to be friends to see these messages
+                        {{!/if}}
                     </div>
                 </div>
             </div>
