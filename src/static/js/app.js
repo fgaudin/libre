@@ -53,13 +53,16 @@ App.Router.map(function () {
 });
 
 App.User = DS.Model.extend({
-
+    username: DS.attr('string'),
+    fullname: DS.attr('string'),
+    pic: DS.attr('string'),
 });
 
 App.Message = DS.Model.extend({
   body: DS.attr('string'),
   author_username: DS.attr('string'),
   author_fullname: DS.attr('string'),
+  author_pic: DS.attr('string'),
   date: DS.attr('date'),
   likes: DS.attr('number'),
   liked: DS.attr('boolean'),
@@ -140,15 +143,14 @@ App.UserProfileRoute = Ember.Route.extend({
     }
 });
 
-App.UserProfileRouteIndex  = Ember.Route.extend({
-    model: function () {
-        return this.modelFor('libre');
-    }
-});
-
 App.UserProfileIndexController = Ember.ArrayController.extend({
     sortProperties: ['id'],
     sortAscending: false,
+    author: function(){
+        var username = this.get('username');
+        console.log('author: ' + username);
+        return this.get('store').find('user', username);
+    }.property('username'),
     friends: function(){
         console.log("-> " + this.get('username'));
         return this.filterBy('scope', 'friends').filterBy('author_username', this.get('username'));

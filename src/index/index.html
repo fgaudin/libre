@@ -64,9 +64,12 @@
         </script>
 
         <script type="text/x-handlebars" data-template-name="user_profile/index">
-        <div class="pure-g">
+        <div class="pure-g author-header">
             <div class="pure-u">
-                Profile
+                <div class="author-avatar"><img {{! bind-attr src=author.pic}} /></div>
+                <div class="author-name">
+                    <span class="fullname">{{! author.fullname }}</span> <span class="username">({{! author.username }})</span>
+                </div>
             </div>
         </div>
         <div class="pure-g-r feeds">
@@ -91,10 +94,10 @@
 
         <script type="text/x-handlebars" data-template-name="components/message-tpl">
             <div class="message">
-                <div class="author-avatar"><img src="https://pbs.twimg.com/profile_images/1257042635/alf_bigger.JPG" /></div>
+                <div class="author-avatar"><img {{! bind-attr src=message.author_pic}} /></div>
                 <div class="message-content">
                     <div class="date">{{!#link-to 'message' message.id}} {{!message.formatedDate}}{{!/link-to}}</div>
-                    <div class="author">{{!#link-to 'user_profile' message.author_username}}{{!message.author_fullname}} ({{!message.author_username}}){{!/link-to}}</a></div>
+                    <div class="author">{{!#link-to 'user_profile' message.author_username}}<span class="fullname">{{! message.author_fullname }}</span> <span class="username">({{! message.author_username }})</span>{{!/link-to}}</a></div>
                     <div class="content">
                         {{!message.body}}
                     </div>

@@ -120,7 +120,21 @@ textarea {
     text-align: right;
 }
 
+.author-header {
+    max-width: 900px;
+    margin: 20px auto;
+    font-size: 2.6em;
+}
+.author-name {
+    padding-left: 65px;
+    font-weight: bold;
+    color: #326342;
+}
 .new-message {
     width: 423px;
     margin: 0 auto;
+}
+
+.username {
+    font-size: 0.7em;
 }

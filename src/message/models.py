@@ -37,12 +37,13 @@ class MessageManager:
 
 
 class Message:
-    def __init__(self, scope, body, author_username, author_fullname, date=None, likes=0, id=None, *args, **kwargs):
+    def __init__(self, scope, body, author_username, author_fullname, author_pic, date=None, likes=0, id=None, *args, **kwargs):
         self.id = id
         self.scope = scope
         self.body = body
         self.author_username = author_username
         self.author_fullname = author_fullname
+        self.author_pic = author_pic
         self.date = date or datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.likes = likes
 
@@ -52,6 +53,7 @@ class Message:
                 'body': self.body,
                 'author_username': self.author_username,
                 'author_fullname': self.author_fullname,
+                'author_pic': self.author_pic,
                 'date': self.date,
                 'likes': self.likes}
 

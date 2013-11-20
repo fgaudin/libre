@@ -13,7 +13,7 @@ class UserManager:
                     fullname)
         user.save()
 
-    def find(self, token=None, uid=None, raw_uid=None):
+    def find(self, token=None, uid=None, raw_uid=None, username=None):
         connection = Redis.get_connection()
         if token:
             uid = connection.get('t:%s' % token)
@@ -21,10 +21,16 @@ class UserManager:
                 uid = uid.decode()
         if raw_uid:
             uid = hashlib.sha224(raw_uid.encode('utf-8')).hexdigest()
+
+        user = None
         if uid:
             user = connection.get('u:%s' % uid)
-            if user:
-                return User(uid, **json_decode(user))
+        elif username:
+            user = connection.get('ru:%s' % username)
+
+        if user:
+            return User(uid, **json_decode(user))
+
         return None
 
 
@@ -33,13 +39,25 @@ class UserAlreadyExists(Exception):
 
 
 class User:
-    def __init__(self, uid, username, fullname):
+    def __init__(self, uid, username, fullname, pic):
         self.uid = uid
         self.username = username
         self.fullname = fullname
+        self.pic = pic
 
     def to_json(self):
-        return json_encode({'username': self.username, 'fullname': self.fullname})
+        return json_encode({
+                            'username': self.username,
+                            'fullname': self.fullname,
+                            'pic': self.pic})
+
+    def to_dict(self):
+        return {'id': self.username,
+                'uid': self.uid,
+                'username': self.username,
+                'fullname': self.fullname,
+                'pic': self.pic
+                }
 
     def save(self):
         connection = Redis.get_connection()

@@ -4,6 +4,7 @@ from message.handlers import MessageHandler
 from websocket.handlers import WebSocketHandler
 from tornado import web, ioloop
 from auth.handlers import LoginHandler
+from user.handlers import UserHandler
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -15,10 +16,9 @@ def main():
             (r"/", IndexHandler),
             (r"/login", LoginHandler),
             (r"/socket", WebSocketHandler),
-            (r"/friendMessages", MessageHandler, {'scope': 'friends'}),
-            (r"/publicMessages", MessageHandler, {'scope': 'public'}),
             (r"/messages", MessageHandler),
             (r"/messages/([0-9]+)", MessageHandler),
+            (r"/users/([a-zA-Z0-9]+)", UserHandler),
             ],
             debug=True,
             static_path='static/',

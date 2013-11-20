@@ -35,6 +35,7 @@ class MessageHandler(BaseHandler):
         message['body'] = linkify(self.get_argument('body'))
         message['author_fullname'] = user.fullname
         message['author_username'] = user.username
+        message['author_pic'] = user.pic
         message['likes'] = 0
         msg_obj = Message(**message)
         msg_obj.save()
