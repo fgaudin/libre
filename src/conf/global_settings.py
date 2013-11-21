@@ -1,0 +1,5 @@
+HOST = ''  # e.g. mydomain.com
+
+FACEBOOK_APP_ID = ''
+FACEBOOK_APP_SECRET = ''
+FACEBOOK_REDIRECT_URI = ''

@@ -11,11 +11,13 @@ FOLLOWERS = 'fw'
 
 
 class UserManager:
-    def create_user(self, uid, username, fullname):
+    def create_user(self, uid, username, fullname, pic=''):
         user = User(hashlib.sha224(uid.encode('utf-8')).hexdigest(),
                     username,
-                    fullname)
+                    fullname,
+                    pic=pic)
         user.save()
+        return user
 
     def find(self, token=None, uid=None, raw_uid=None, username=None):
         connection = Redis.get_connection()
@@ -74,8 +76,8 @@ class User:
                                 json_encode(self._to_db())):
             raise UserAlreadyExists()
 
-        connection.set('%s:%s' % (REVERSE_USER, self.username,
-                                  json_encode(self._to_db())))
+        connection.set('%s:%s' % (REVERSE_USER, self.username),
+                                  json_encode(self._to_db()))
 
     def authenticate(self, token):
         connection = Redis.get_connection()
