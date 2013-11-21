@@ -1,7 +1,9 @@
 from tornado.escape import json_encode
 from web import BaseHandler
-from auth.models import User
+from user.models import User
 from tornado.web import authenticated
+from websocket.manager import Manager
+from message.models import Message
 
 
 class UserHandler(BaseHandler):
@@ -49,10 +51,10 @@ class UserHandler(BaseHandler):
             user.unfriend(current_user)
             response['friend'] = False
         if action == 'follow':
-            user.follow(current_user)
+            current_user.follow(user)
             response['followed'] = True
         elif action == 'unfollow':
-            user.unfollow(current_user)
+            current_user.unfollow(user)
             response['followed'] = False
 
         self.write(json_encode(response))

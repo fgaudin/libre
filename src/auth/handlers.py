@@ -1,5 +1,5 @@
 import tornado.web
-from auth.models import User
+from user.models import User
 from tornado.escape import json_encode
 import random
 import string

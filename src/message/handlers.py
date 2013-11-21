@@ -2,27 +2,27 @@ from tornado.escape import json_encode, json_decode, linkify
 from tornado.web import authenticated
 from web import BaseHandler
 from message.models import Message
+from user.models import User
 
 
 class MessageHandler(BaseHandler):
-    def initialize(self, scope=None):
-        self.scope = scope
-
     def get(self, message_id=None):
-        user = self.get_current_user()
+        current_user = self.get_current_user()
         if message_id:
             message = Message.objects.get(message_id)
             response = {'message': message.to_dict()}
             self.write(json_encode(response))
         else:
             messages = []
-            if user:
-                if self.scope == 'friends':
-                    messages = Message.objects.get_friends_feed(user)
-                elif self.scope == 'public':
-                    messages = Message.objects.get_public_feed(user)
-                else:
-                    messages = Message.objects.get_friends_feed(user) + Message.objects.get_public_feed(user)
+            username = self.get_argument('username', None)
+            if username:
+                user = User.objects.find(username=username)
+                if user.is_friend(current_user):
+                    messages.extend(Message.objects.get_messages_to_friends(user))
+                messages.extend(Message.objects.get_messages_to_public(user))
+            else:
+                if current_user:
+                    messages = Message.objects.get_friends_feed(current_user) + Message.objects.get_public_feed(current_user)
             response = {'message': [m.to_dict() for m in messages]}
 
         self.write(json_encode(response))

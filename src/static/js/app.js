@@ -83,6 +83,7 @@ App.Message = DS.Model.extend({
   likes: DS.attr('number'),
   liked: DS.attr('boolean'),
   scope: DS.attr('string'),
+  forMe: DS.attr('boolean'),
 
   formatedDate: function() {
       if (this.get('date')) {
@@ -139,10 +140,10 @@ App.LibreIndexController = Ember.ArrayController.extend({
     sortProperties: ['id'],
     sortAscending: false,
     friends: function(){
-        return this.filterBy('scope', 'friends');
+        return this.filterBy('scope', 'friends').filterBy('forMe', true);
     }.property('model.@each'),
     public: function(){
-        return this.filterBy('scope', 'public');
+        return this.filterBy('scope', 'public').filterBy('forMe', true);
     }.property('model.@each')
 });
 
@@ -172,7 +173,8 @@ App.UserProfileIndexController = Ember.ArrayController.extend({
         return this.filterBy('scope', 'friends').filterBy('author_username', this.get('username'));
     }.property('model.@each', 'username'),
     public: function(){
-        return this.filterBy('scope', 'public').filterBy('author_username', this.get('username'));
+        //return this.filterBy('scope', 'public').filterBy('author_username', this.get('username'));
+        return this.get('store').find('message', {username: this.get('username')});
     }.property('model.@each', 'username'),
     actions: {
         toggle_friend: function(){

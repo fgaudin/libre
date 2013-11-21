@@ -1,5 +1,5 @@
 from tornado.web import RequestHandler
-from auth.models import User
+from user.models import User
 
 
 class BaseHandler(RequestHandler):

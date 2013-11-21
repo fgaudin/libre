@@ -96,6 +96,7 @@ class User:
     def add_request_from(self, current_user):
         connection = Redis.get_connection()
         connection.sadd("%s:%s" % (FRIEND_REQUESTS, self.uid), current_user.uid)
+        current_user.follow(self)
 
     def cancel_request_from(self, current_user):
         connection = Redis.get_connection()
@@ -112,13 +113,13 @@ class User:
         connection.srem("%s:%s" % (FRIENDS, self.uid), current_user.uid)
         connection.srem("%s:%s" % (FRIENDS, current_user.uid), self.uid)
 
-    def follow(self, current_user):
+    def follow(self, user):
         connection = Redis.get_connection()
-        connection.sadd("%s:%s" % (FOLLOWERS, self.uid), current_user.uid)
+        connection.sadd("%s:%s" % (FOLLOWERS, user.uid), self.uid)
 
-    def unfollow(self, current_user):
+    def unfollow(self, user):
         connection = Redis.get_connection()
-        connection.srem("%s:%s" % (FOLLOWERS, self.uid), current_user.uid)
+        connection.srem("%s:%s" % (FOLLOWERS, user.uid), self.uid)
 
     def is_followed_by(self, current_user):
         connection = Redis.get_connection()

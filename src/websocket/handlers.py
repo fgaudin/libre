@@ -1,6 +1,6 @@
 import tornado.websocket
 from websocket.manager import Manager
-from auth.models import User
+from user.models import User
 
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
