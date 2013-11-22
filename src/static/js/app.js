@@ -1,16 +1,7 @@
 window.App = Ember.Application.create({
     LOG_TRANSITIONS: true,
-    LOG_TRANSITIONS_INTERNAL: true
-});
-
-//App.ApplicationAdapter = DS.FixtureAdapter.extend();
-
-Ember.Application.initializer({
-    name: "socket",
-    initialize: function(container, application) {
-        var store = container.lookup('store:main');
-        //store.push('feed', {id: 'friends', messages: []});
-        //store.push('feed', {id: 'public', messages: []});
+    LOG_TRANSITIONS_INTERNAL: true,
+    openSocket: function(store){
         if ("WebSocket" in window) {
             console.log("WebSocket is supported by your Browser!");
             App.ws = new WebSocket("ws://" + window.location.host + "/socket");
@@ -162,6 +153,7 @@ App.LibreIndexController = Ember.ArrayController.extend({
                     ctrl.set('email', '');
                     ctrl.set('password', '');
                     ctrl.get('libre').set('authenticated', true);
+                    App.openSocket(ctrl.get('store'))
                 }
             },
             'json');
