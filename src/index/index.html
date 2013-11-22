@@ -36,16 +36,40 @@
             {{!/each}}
         </script>
 
+        <script type="text/x-handlebars" data-template-name="_loggedout">
+            <div class="signup">
+                <div>Log in or sign up</div>
+                <div class="email-signup">
+                    <form class="pure-form">
+                        {{!input value=email size="15" placeholder="Email"}}
+                        {{!input value=password type="password" size="15" placeholder="Password"}}
+                        <input {{!action 'emailLogin'}} type="submit" value="Login" class="pure-button">
+                        <input {{!action 'emailSignup'}} type="submit" value="Signup" class="pure-button">
+                    </form>
+                </div>
+                or
+                <div class="social-signup">
+                    Connect with
+                    <button class="pure-button" {{!action 'facebookLogin'}}>Facebook</button>
+                    <button class="pure-button" {{!action 'googleLogin'}}>Google</button>
+                </div>
+            </div>
+        </script>
+
         <script type="text/x-handlebars" data-template-name="libre/index">
         <div class="pure-g-r feeds">
             <div class="pure-u-1-2">
                 <div class="feed friend-feed">
                     <h2>Friends feed</h2>
                     <div class="messages">
+                        {{!#if libre.authenticated }}
                         <div class="message-to-friend">
                             {{! render "friend/create"}}
                         </div>
                         {{! feed-tpl messages=friends }}
+                        {{!else}}
+                            {{! partial "loggedout" }}
+                        {{!/if}}
                     </div>
                 </div>
             </div>
@@ -134,13 +158,7 @@
                 </div>
                 <div class="pure-u-2-3 login">
                     {{!#if authenticated}}
-                    <input type="submit" value="Logout" class="pure-button">
-                    {{!else}}
-                    <form class="pure-form">
-                        {{!input value=email size="15" placeholder="Email"}}
-                        {{!input value=password type="password" size="15" placeholder="Password"}}
-                        <input {{!action 'login'}} type="submit" value="Login" class="pure-button">
-                    </form>
+                    {{!fullname}} <input {{!action 'logout'}} type="submit" value="Logout" class="pure-button">
                     {{!/if}}
                 </div>
             </div>
@@ -158,7 +176,8 @@
         {% if user %}
         <script type="text/javascript">
         App.LibreController.reopen({
-            authenticated: true
+            authenticated: true,
+            fullname: '{{user.fullname}}'
         });
         </script>
         {% end %}

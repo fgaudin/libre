@@ -15,7 +15,6 @@ Ember.Application.initializer({
             console.log("WebSocket is supported by your Browser!");
             App.ws = new WebSocket("ws://" + window.location.host + "/socket");
             App.ws.onopen = function() {
-                App.ws.send("Message to send");
             };
             App.ws.onmessage = function (evt) {
                 console.log('received: ' + evt.data)
@@ -35,7 +34,6 @@ Ember.Application.initializer({
 
 App.Router.map(function () {
   this.resource('libre', { path: '/' }, function(){
-      this.route('login',  { path: 'login' });
       this.resource("user", { path: "user" }, function(){
           this.resource('user_profile',  { path: ':username' }, function(){
               this.resource("user_friends", { path: "friends" }),
@@ -96,21 +94,15 @@ App.Message = DS.Model.extend({
 App.LibreController = Ember.Controller.extend({
     authenticated: false,
     actions: {
-       login: function(){
-           var email = this.get('email');
-           var password = this.get('password');
-           var ctrl = this;
-           App.$.post( "/login",
-           {email: email, password: password},
-           function(data) {
-               console.log(data);
-               if (data.authenticated) {
-                   ctrl.set('email', '');
-                   ctrl.set('password', '');
-                   ctrl.set('authenticated', true);
-               }
-           },
-           'json');
+        logout: function(){
+            var ctrl = this;
+            App.$.post( "/logout",
+            function(data) {
+                if (!data.authenticated) {
+                    ctrl.set('authenticated', false);
+                }
+            },
+            'json');
         }
     }
 });
@@ -121,15 +113,6 @@ App.LibreRoute = Ember.Route.extend({
     }
 });
 
-App.LibreLoginRoute = Ember.Route.extend({
-    beforeModel: function() {
-        var route = this;
-        App.$.post( "/login", function(data){
-            route.transitionTo('libre');
-        });
-    }
-});
-
 App.LibreIndexRoute = Ember.Route.extend({
     model: function(){
         return this.modelFor('libre');
@@ -137,6 +120,8 @@ App.LibreIndexRoute = Ember.Route.extend({
 });
 
 App.LibreIndexController = Ember.ArrayController.extend({
+    needs: "libre",
+    libre: Ember.computed.alias("controllers.libre"),
     sortProperties: ['id'],
     sortAscending: false,
     friends: function(){
@@ -144,7 +129,50 @@ App.LibreIndexController = Ember.ArrayController.extend({
     }.property('model.@each'),
     public: function(){
         return this.filterBy('scope', 'public').filterBy('forMe', true);
-    }.property('model.@each')
+    }.property('model.@each'),
+    actions: {
+        emailSignup: function(){
+            var email = this.get('email');
+            var password = this.get('password');
+            var ctrl = this;
+            App.$.post( "/signup",
+            {email: email, password: password},
+            function(data) {
+                console.log(data);
+                if (data.authenticated) {
+                    ctrl.set('email', '');
+                    ctrl.set('password', '');
+                    ctrl.get('libre').set('authenticated', true);
+                } else {
+                    console.log('signup failed');
+                }
+            },
+            'json');
+        },
+        emailLogin: function(){
+            var email = this.get('email');
+            var password = this.get('password');
+            var action = this;
+            var ctrl = this;
+            App.$.post( "/login/email",
+            {email: email, password: password},
+            function(data) {
+                console.log(data);
+                if (data.authenticated) {
+                    ctrl.set('email', '');
+                    ctrl.set('password', '');
+                    ctrl.get('libre').set('authenticated', true);
+                }
+            },
+            'json');
+         },
+         facebookLogin: function(){
+             window.open("/login/facebook", "_blank", "height=400,width=600");
+         },
+         googleLogin: function(){
+             window.open("/login/google", "_blank", "height=400,width=600");
+         }
+    }
 });
 
 App.UserProfileRoute = Ember.Route.extend({
