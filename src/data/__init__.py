@@ -1,12 +1,5 @@
 import redis
-
-
-REDIS = {
-    'host':'127.0.0.1',
-    'port':6379,
-    'password':None,
-    'db': 0,
-}
+from conf import settings
 
 
 class Redis():
@@ -15,10 +8,7 @@ class Redis():
     @classmethod
     def get_connection(cls):
         if not cls.connection:
-            pool = redis.ConnectionPool(host=REDIS['host'],
-                            port=REDIS['port'],
-                            db=REDIS['db'],
-                            password=REDIS['password'])
+            pool = redis.ConnectionPool(**settings.REDIS)
             cls.connection = redis.StrictRedis(connection_pool=pool)
 
         return cls.connection
