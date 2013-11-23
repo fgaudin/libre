@@ -33,6 +33,7 @@ class MessageHandler(BaseHandler):
         message = {}
         message['scope'] = self.get_argument('scope')
         message['body'] = linkify(self.get_argument('body'))
+        message['author_uid'] = user.uid
         message['author_fullname'] = user.fullname
         message['author_username'] = user.username
         message['author_pic'] = user.pic

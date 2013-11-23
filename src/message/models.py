@@ -2,6 +2,7 @@ from tornado.escape import json_encode, json_decode
 from data import Redis, TornadoRedis
 from websocket.manager import Manager
 import datetime
+from user.models import User
 
 MESSAGE_DURATION = 3600
 MESSAGES_TO_FRIENDS = 'fm'
@@ -51,16 +52,29 @@ class MessageManager:
 
     def on_published(self, socket, data):
         message = Message(**data)
-        message.for_me = True
-        socket.write_message(json_encode({'type': 'message',
-                                          'data': message.to_dict()}))
+        manager = Manager.get_manager()
+        current_user_uid = manager.get_user(socket)
+        if current_user_uid == message.author_uid:
+            message.for_me = True
+        else:
+            current_user = User(current_user_uid, '', '')
+            author = User(message.author_uid, message.author_username, message.author_fullname)
+            if message.scope == 'public' and author.is_followed_by(current_user):
+                message.for_me = True
+            elif message.scope == 'friends' and author.is_friend(current_user):
+                message.for_me = True
+
+        if message.for_me:
+            socket.write_message(json_encode({'type': 'message',
+                                              'data': message.to_dict()}))
 
 
 class Message:
-    def __init__(self, scope, body, author_username, author_fullname, author_pic, date=None, likes=0, for_me=False, id=None, *args, **kwargs):
+    def __init__(self, scope, body, author_uid, author_username, author_fullname, author_pic, date=None, likes=0, for_me=False, id=None, *args, **kwargs):
         self.id = id
         self.scope = scope
         self.body = body
+        self.author_uid = author_uid
         self.author_username = author_username
         self.author_fullname = author_fullname
         self.author_pic = author_pic
@@ -72,6 +86,7 @@ class Message:
         return {'id': self.id,
                 'scope': self.scope,
                 'body': self.body,
+                'author_uid': self.author_uid,
                 'author_username': self.author_username,
                 'author_fullname': self.author_fullname,
                 'author_pic': self.author_pic,
@@ -83,6 +98,7 @@ class Message:
         return {'id': self.id,
                 'scope': self.scope,
                 'body': self.body,
+                'author_uid': self.author_uid,
                 'author_username': self.author_username,
                 'author_fullname': self.author_fullname,
                 'author_pic': self.author_pic,

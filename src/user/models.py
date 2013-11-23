@@ -46,7 +46,7 @@ class UserAlreadyExists(Exception):
 
 
 class User:
-    def __init__(self, uid, username, fullname, pic):
+    def __init__(self, uid, username, fullname, pic=''):
         self.uid = uid
         self.username = username
         self.fullname = fullname
