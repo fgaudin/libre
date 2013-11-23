@@ -15,8 +15,12 @@ FOLLOWERS = 'fw'
 
 
 class UserManager:
+    def _nextId(self):
+        connection = Redis.get_connection()
+        return connection.incr('user_id')
+
     def create_user(self, username, fullname, pic=''):
-        user = User(hashlib.sha224(generate_token().encode()).hexdigest(),
+        user = User(self._nextId(),
                     username,
                     fullname,
                     pic=pic)
@@ -54,11 +58,6 @@ class User:
         self.username = username
         self.fullname = fullname
         self.pic = pic
-
-    def to_json(self):
-        return json_encode({'username': self.username,
-                            'fullname': self.fullname,
-                            'pic': self.pic})
 
     def to_dict(self):
         return {'id': self.username,

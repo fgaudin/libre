@@ -169,7 +169,7 @@
                 </div>
                 <div class="pure-u-2-3 login">
                     {{!#if authenticated}}
-                    {{!fullname}} <input {{!action 'logout'}} type="submit" value="Logout" class="pure-button">
+                    {{!fullname}} - @{{!username}} <input {{!action 'logout'}} type="submit" value="Logout" class="pure-button">
                     {{!/if}}
                 </div>
             </div>
@@ -195,7 +195,8 @@
         });
         App.LibreController.reopen({
             authenticated: true,
-            fullname: '{{user.fullname}}'
+            fullname: '{{user.fullname}}',
+            username: '{{user.username}}'
         });
         </script>
         {% end %}

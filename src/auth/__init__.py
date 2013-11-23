@@ -6,7 +6,8 @@ EMAIL = 'e'
 
 
 def generate_token():
-    return ''.join(random.choice(string.ascii_letters) for i in range(20))
+    token = ''.join(random.choice(string.ascii_letters) for i in range(20))
+    return hashlib.sha224(token.encode('utf-8')).hexdigest()
 
 
 def salted_hash(phrase, salt=None):
