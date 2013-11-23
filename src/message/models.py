@@ -1,5 +1,5 @@
 from tornado.escape import json_encode, json_decode
-from data import Redis
+from data import Redis, TornadoRedis
 from websocket.manager import Manager
 import datetime
 
@@ -48,6 +48,12 @@ class MessageManager:
         msgs = []
         msgs.extend(connection.lrange('%s:%s' % (PUBLIC_FEED, user.uid), 0, -1))
         return self.mget(*msgs, for_me=True)
+
+    def on_published(self, socket, data):
+        message = Message(**data)
+        message.for_me = True
+        socket.write_message(json_encode({'type': 'message',
+                                          'data': message.to_dict()}))
 
 
 class Message:
@@ -105,7 +111,6 @@ class Message:
         friends = user.get_friends()
         for friend in friends:
             connection.rpush('%s:%s' % (FRIEND_FEED, friend), self.id)
-            manager.send_message('message', self.to_dict(), friend)
 
     def push_to_public(self, user):
         connection = Redis.get_connection()
@@ -114,18 +119,23 @@ class Message:
         friends = user.get_friends()
         for friend in friends:
             connection.rpush('%s:%s' % (PUBLIC_FEED, friend), self.id)
-            manager.send_message('message', self.to_dict(), friend)
 
         followers = user.get_followers()
         for follower in followers:
             connection.rpush('%s:%s' % (PUBLIC_FEED, follower), self.id)
-            manager.send_message('message', self.to_dict(), follower)
 
     def push(self, current_user):
         self.push_to_self(current_user)
         if self.scope == 'friends':
-            return self.push_to_friends(current_user)
+            self.push_to_friends(current_user)
         elif self.scope == 'public':
-            return self.push_to_public(current_user)
+            self.push_to_public(current_user)
+
+        self.publish()
+
+    def publish(self):
+        c = TornadoRedis.get_connection()
+        c.publish('main', json_encode({'type': 'message',
+                                       'data': self.to_dict()}))
 
     objects = MessageManager()
