@@ -36,7 +36,7 @@ class MessageHandler(BaseHandler):
         user = self.get_current_user()
         message = {}
         message['scope'] = self.get_argument('scope')
-        message['body'] = linkify(self.get_argument('body'), True)
+        message['body'] = linkify(self.get_argument('body'), True, 'target="_blank"')
         message['author_uid'] = user.uid
         message['author_fullname'] = user.fullname
         message['author_username'] = user.username
