@@ -60,7 +60,10 @@ class FacebookGraphLoginHandler(tornado.web.RequestHandler,
 
             connection = Redis.get_connection()
             new_user = False
-            if not connection.exists('fb:{0}'.format(fb_data['id'])):
+            uid = connection.get('fb:{0}'.format(fb_data['id']))
+            if uid:
+                user = User.objects.find(uid=uid.decode())
+            else:
                 new_user = True
                 user = User.objects.create_user(
                     fb_data['name'].lower().replace(' ', '_'),
@@ -88,13 +91,44 @@ class GoogleLoginHandler(tornado.web.RequestHandler,
 
             connection = Redis.get_connection()
             new_user = False
-            if not connection.exists('gg:{0}'.format(google_data['claimed_id'])):
+            uid = connection.get('gg:{0}'.format(google_data['claimed_id']))
+            if uid:
+                user = User.objects.find(uid=uid.decode())
+            else:
                 new_user = True
                 user = User.objects.create_user(
                     google_data['name'].lower().replace(' ', '_'),
                     google_data['name'],
                     '')
                 connection.set('gg:{0}'.format(google_data['claimed_id']), user.uid)
+
+            token = generate_token()
+            user.authenticate(token)
+            self.set_secure_cookie("auth", token)
+            self.render("redirect.html", new_user=new_user)
+        else:
+            yield self.authenticate_redirect()
+
+
+class TwitterLoginHandler(tornado.web.RequestHandler,
+                          tornado.auth.TwitterMixin):
+    @tornado.web.asynchronous
+    @tornado.gen.coroutine
+    def get(self):
+        if self.get_argument("oauth_token", None):
+            twitter_data = yield self.get_authenticated_user()
+            connection = Redis.get_connection()
+            new_user = False
+            uid = connection.get('tw:{0}'.format(twitter_data['id_str']))
+            if uid:
+                user = User.objects.find(uid=uid.decode())
+            else:
+                new_user = True
+                user = User.objects.create_user(
+                    twitter_data['username'].lower().replace(' ', '_'),
+                    twitter_data['name'],
+                    twitter_data['profile_image_url'])
+                connection.set('tw:{0}'.format(twitter_data['id_str']), user.uid)
 
             token = generate_token()
             user.authenticate(token)

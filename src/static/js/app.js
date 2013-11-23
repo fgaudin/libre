@@ -163,6 +163,9 @@ App.LibreIndexController = Ember.ArrayController.extend({
          },
          googleLogin: function(){
              window.open("/login/google", "_blank", "height=400,width=600");
+         },
+         twitterLogin: function(){
+             window.open("/login/twitter", "_blank", "height=400,width=600");
          }
     }
 });

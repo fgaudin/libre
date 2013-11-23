@@ -4,8 +4,9 @@ from message.handlers import MessageHandler
 from websocket.handlers import WebSocketHandler
 from tornado import web, ioloop
 from auth.handlers import FacebookGraphLoginHandler, \
-    LogoutHandler, EmailLoginHandler, GoogleLoginHandler
+    LogoutHandler, EmailLoginHandler, GoogleLoginHandler, TwitterLoginHandler
 from user.handlers import UserHandler, ProfileHandler
+from conf import settings
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -20,6 +21,7 @@ def main():
             (r"/login/email", EmailLoginHandler),
             (r"/login/facebook", FacebookGraphLoginHandler),
             (r"/login/google", GoogleLoginHandler),
+            (r"/login/twitter", TwitterLoginHandler),
             (r"/socket", WebSocketHandler),
             (r"/messages", MessageHandler),
             (r"/messages/([0-9]+)", MessageHandler),
@@ -27,7 +29,9 @@ def main():
             ],
             debug=True,
             static_path='static/',
-            cookie_secret='jksjdflksjdfljsdf'
+            cookie_secret='jksjdflksjdfljsdf',
+            twitter_consumer_key=settings.TWITTER_CONSUMER_KEY,
+            twitter_consumer_secret=settings.TWITTER_CONSUMER_SECRET
         )
     app.listen(options.port)
     ioloop.IOLoop.instance().start()
