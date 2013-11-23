@@ -70,7 +70,9 @@ class MessageManager:
 
 
 class Message:
-    def __init__(self, scope, body, author_uid, author_username, author_fullname, author_pic, date=None, likes=0, for_me=False, id=None, *args, **kwargs):
+    def __init__(self, scope, body, author_uid, author_username,
+                 author_fullname, author_pic, date=None, likes=0,
+                 for_me=False, id=None, *args, **kwargs):
         self.id = id
         self.scope = scope
         self.body = body

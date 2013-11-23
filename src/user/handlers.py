@@ -2,8 +2,6 @@ from tornado.escape import json_encode
 from web import BaseHandler
 from user.models import User
 from tornado.web import authenticated
-from websocket.manager import Manager
-from message.models import Message
 
 
 class ProfileHandler(BaseHandler):
