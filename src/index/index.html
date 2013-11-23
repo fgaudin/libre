@@ -132,7 +132,7 @@
                     <div class="date">{{!#link-to 'message' message.id}} {{!message.formatedDate}}{{!/link-to}}</div>
                     <div class="author">{{!#link-to 'user_profile' message.author_username}}<span class="fullname">{{! message.author_fullname }}</span> <span class="username">({{! message.author_username }})</span>{{!/link-to}}</a></div>
                     <div class="content">
-                        {{!message.body}}
+                        {{{!message.body}}}
                     </div>
                     {{!# if message.url }}
                     <div class="link">
