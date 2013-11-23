@@ -11,7 +11,9 @@ window.App = Ember.Application.create({
                 console.log('received: ' + evt.data)
                 var msg = JSON.parse(evt.data);
                 if (msg.type == 'message') {
-                    store.push('message', msg.data);
+                    msg.data.forEach(function(message){
+                        store.push('message', message);
+                    });
                 }
             };
             App.ws.onclose = function() {
@@ -74,6 +76,9 @@ App.Message = DS.Model.extend({
   scope: DS.attr('string'),
   forMe: DS.attr('boolean'),
 
+  numericId: function(){
+      return parseInt(this.get('id'), 10);
+  }.property('id'),
   formatedDate: function() {
       if (this.get('date')) {
           return this.get('date').toLocaleString();
@@ -113,7 +118,7 @@ App.LibreIndexRoute = Ember.Route.extend({
 App.LibreIndexController = Ember.ArrayController.extend({
     needs: "libre",
     libre: Ember.computed.alias("controllers.libre"),
-    sortProperties: ['id'],
+    sortProperties: ['numericId'],
     sortAscending: false,
     friends: function(){
         return this.filterBy('scope', 'friends').filterBy('forMe', true);
@@ -184,7 +189,7 @@ App.UserProfileRoute = Ember.Route.extend({
 });
 
 App.UserProfileIndexController = Ember.ArrayController.extend({
-    sortProperties: ['id'],
+    sortProperties: ['numericId'],
     sortAscending: false,
     author: function(){
         var username = this.get('username');

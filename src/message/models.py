@@ -66,7 +66,7 @@ class MessageManager:
 
         if message.for_me:
             socket.write_message(json_encode({'type': 'message',
-                                              'data': message.to_dict()}))
+                                              'data': [message.to_dict()]}))
 
 
 class Message:
