@@ -1,6 +1,7 @@
 from data import Redis
 from tornado.escape import json_encode, json_decode
 import hashlib
+from auth import generate_token
 
 TOKEN = 't'
 USER = 'u'
@@ -11,8 +12,8 @@ FOLLOWERS = 'fw'
 
 
 class UserManager:
-    def create_user(self, uid, username, fullname, pic=''):
-        user = User(hashlib.sha224(uid.encode('utf-8')).hexdigest(),
+    def create_user(self, username, fullname, pic=''):
+        user = User(hashlib.sha224(generate_token().encode()).hexdigest(),
                     username,
                     fullname,
                     pic=pic)
@@ -76,6 +77,23 @@ class User:
                                 json_encode(self._to_db())):
             raise UserAlreadyExists()
 
+        connection.set('%s:%s' % (REVERSE_USER, self.username),
+                                  json_encode(self._to_db()))
+
+    def update(self, username, fullname):
+        connection = Redis.get_connection()
+        if self.username != username:
+            if not connection.setnx('%s:%s' % (REVERSE_USER, username),
+                                    ''):
+                raise UserAlreadyExists()
+            else:
+                connection.delete('%s:%s' % (REVERSE_USER, self.username))
+
+        self.username = username
+        self.fullname = fullname
+
+        connection.set('%s:%s' % (USER, self.uid),
+                       json_encode(self._to_db()))
         connection.set('%s:%s' % (REVERSE_USER, self.username),
                                   json_encode(self._to_db()))
 

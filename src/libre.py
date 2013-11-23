@@ -3,9 +3,9 @@ from index.handlers import IndexHandler
 from message.handlers import MessageHandler
 from websocket.handlers import WebSocketHandler
 from tornado import web, ioloop
-from auth.handlers import FacebookGraphLoginHandler, SignupHandler, \
+from auth.handlers import FacebookGraphLoginHandler, \
     LogoutHandler, EmailLoginHandler, GoogleLoginHandler
-from user.handlers import UserHandler
+from user.handlers import UserHandler, ProfileHandler
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -15,7 +15,7 @@ def main():
     app = web.Application(
         [
             (r"/", IndexHandler),
-            (r"/signup", SignupHandler),
+            (r"/profile", ProfileHandler),
             (r"/logout", LogoutHandler),
             (r"/login/email", EmailLoginHandler),
             (r"/login/facebook", FacebookGraphLoginHandler),

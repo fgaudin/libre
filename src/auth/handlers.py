@@ -5,47 +5,38 @@ import tornado.web
 import tornado.auth
 from tornado.web import authenticated
 from web import BaseHandler
-from auth import store_credentials, generate_token, get_identity
-
-
-class SignupHandler(tornado.web.RequestHandler):
-    def post(self):
-        email = self.get_argument('email')
-        password = self.get_argument('password')
-        uid = "email:%s" % email
-        user = User.objects.find(raw_uid=uid)
-
-        authenticated = False
-
-        if not user:
-            username = email.split('@')[0].lower()
-            fullname = email.split('@')[0].replace('.', ' ').replace('_', ' ')
-            user = User.objects.create_user(uid, username, fullname)
-            store_credentials(user.uid, email, password)
-            authenticated = True
-            token = generate_token()
-            user.authenticate(token)
-            self.set_secure_cookie("auth", token)
-
-        self.write(json_encode({'authenticated': authenticated}))
+from auth import store_credentials, generate_token, get_identity, email_exists
+from data import Redis
 
 
 class EmailLoginHandler(tornado.web.RequestHandler):
     def post(self):
-        authenticated = False
         email = self.get_argument('email')
         password = self.get_argument('password')
-        uid = get_identity(email, password)
+        action = self.get_argument('action')
 
-        if uid:
-            user = User.objects.find(uid=uid)
-            if user:
-                authenticated = True
+        if action == 'Login':
+            uid = get_identity(email, password)
+
+            if uid:
+                user = User.objects.find(uid=uid)
+                if user:
+                    token = generate_token()
+                    user.authenticate(token)
+                    self.set_secure_cookie("auth", token)
+                    self.redirect('/')
+        elif action == 'Signup':
+            already_exists = email_exists(email)
+
+            if not already_exists:
+                username = email.split('@')[0].lower()
+                fullname = email.split('@')[0].replace('.', ' ').replace('_', ' ')
+                user = User.objects.create_user(username, fullname)
+                store_credentials(user.uid, email, password)
                 token = generate_token()
                 user.authenticate(token)
                 self.set_secure_cookie("auth", token)
-
-        self.write(json_encode({'authenticated': authenticated}))
+                self.redirect('/profile')
 
 
 class LogoutHandler(BaseHandler):
@@ -67,19 +58,20 @@ class FacebookGraphLoginHandler(tornado.web.RequestHandler,
                 client_secret=settings.FACEBOOK_APP_SECRET,
                 code=self.get_argument("code"))
 
-            uid = "facebook:%s" % fb_data['id']
-            user = User.objects.find(raw_uid=uid)
-            if not user:
+            connection = Redis.get_connection()
+            new_user = False
+            if not connection.exists('fb:{0}'.format(fb_data['id'])):
+                new_user = True
                 user = User.objects.create_user(
-                    uid,
                     fb_data['name'].lower().replace(' ', '_'),
                     fb_data['name'],
                     fb_data['picture']['data']['url'])
+                connection.set('fb:{0}'.format(fb_data['id']), user.uid)
 
             token = generate_token()
             user.authenticate(token)
             self.set_secure_cookie("auth", token)
-            self.render("redirect.html")
+            self.render("redirect.html", new_user=new_user)
         else:
             yield self.authorize_redirect(
                 redirect_uri=settings.FACEBOOK_REDIRECT_URI,
@@ -94,18 +86,19 @@ class GoogleLoginHandler(tornado.web.RequestHandler,
         if self.get_argument("openid.mode", None):
             google_data = yield self.get_authenticated_user()
 
-            uid = "google:{0}".format(google_data['claimed_id'])
-            user = User.objects.find(raw_uid=uid)
-            if not user:
+            connection = Redis.get_connection()
+            new_user = False
+            if not connection.exists('gg:{0}'.format(google_data['claimed_id'])):
+                new_user = True
                 user = User.objects.create_user(
-                    uid,
                     google_data['name'].lower().replace(' ', '_'),
                     google_data['name'],
                     '')
+                connection.set('gg:{0}'.format(google_data['claimed_id']), user.uid)
 
             token = generate_token()
             user.authenticate(token)
             self.set_secure_cookie("auth", token)
-            self.render("redirect.html")
+            self.render("redirect.html", new_user=new_user)
         else:
             yield self.authenticate_redirect()

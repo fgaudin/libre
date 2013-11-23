@@ -40,11 +40,11 @@
             <div class="signup">
                 <div>Log in or sign up</div>
                 <div class="email-signup">
-                    <form class="pure-form">
-                        {{!input value=email size="15" placeholder="Email"}}
-                        {{!input value=password type="password" size="15" placeholder="Password"}}
-                        <input {{!action 'emailLogin'}} type="submit" value="Login" class="pure-button">
-                        <input {{!action 'emailSignup'}} type="submit" value="Signup" class="pure-button">
+                    <form class="pure-form" action="/login/email" method="post">
+                        <input name="email" type="text" size="15" placeholder="Email" />
+                        <input name="password" type="password" size="15" placeholder="Password" />
+                        <input type="submit" name="action" value="Login" class="pure-button">
+                        <input type="submit" name="action" value="Signup" class="pure-button">
                     </form>
                 </div>
                 or

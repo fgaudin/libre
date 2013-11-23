@@ -6,6 +6,25 @@ from websocket.manager import Manager
 from message.models import Message
 
 
+class ProfileHandler(BaseHandler):
+    @authenticated
+    def get(self):
+        self.render("index.html", user=self.get_current_user())
+
+    @authenticated
+    def post(self):
+        username = self.get_argument('username')
+        fullname = self.get_argument('fullname')
+
+        user = self.get_current_user()
+        try:
+            user.update(username, fullname)
+            self.redirect('/')
+        except Exception as e:
+            print(e)
+            self.render("index.html", user=self.get_current_user())
+
+
 class UserHandler(BaseHandler):
     def get(self, username):
         user = User.objects.find(username=username)

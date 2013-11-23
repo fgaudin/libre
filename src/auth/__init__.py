@@ -29,6 +29,11 @@ def store_credentials(uid, email, password):
                       'uid': uid})
 
 
+def email_exists(email):
+    connection = Redis.get_connection()
+    return connection.exists('%s:%s' % (EMAIL, email))
+
+
 def get_identity(email, password):
     connection = Redis.get_connection()
     result = connection.hmget('%s:%s' % (EMAIL, email), ['pwd', 'uid'])

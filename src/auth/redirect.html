@@ -1,7 +1,11 @@
 <html>
     <head>
         <script type="text/javascript">
+        {% if new_user %}
+        window.opener.location = '/profile';
+        {% else %}
         window.opener.location = '/';
+        {% end %}
         window.close();
         </script>
     </head>
