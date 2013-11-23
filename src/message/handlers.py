@@ -40,6 +40,6 @@ class MessageHandler(BaseHandler):
         message['likes'] = 0
         msg_obj = Message(**message)
         msg_obj.save()
-        msg_obj.push(user)
+        user.push_message(msg_obj)
 
         self.write(json_encode(msg_obj.to_dict()))

@@ -1,7 +1,9 @@
-from data import Redis
+from data import Redis, TornadoRedis
 from tornado.escape import json_encode, json_decode
 import hashlib
 from auth import generate_token
+from message.models import MESSAGES_TO_FRIENDS, MESSAGES_TO_PUBLIC, FRIEND_FEED, \
+    PUBLIC_FEED
 
 TOKEN = 't'
 USER = 'u'
@@ -148,5 +150,42 @@ class User:
     def get_followers(self):
         connection = Redis.get_connection()
         return [self.uid] + [follower.decode() for follower in connection.smembers("%s:%s" % (FOLLOWERS, self.uid))]
+
+    def push_message(self, msg):
+        self.push_to_self(msg)
+        if msg.scope == 'friends':
+            self.push_to_friends(msg)
+        elif msg.scope == 'public':
+            self.push_to_public(msg)
+
+        self.publish(msg)
+
+    def push_to_self(self, msg):
+        connection = Redis.get_connection()
+        scope = MESSAGES_TO_PUBLIC if msg.scope == 'public' else MESSAGES_TO_FRIENDS
+        connection.rpush("%s:%s" % (scope, self.uid), msg.id)
+
+    def push_to_friends(self, msg):
+        connection = Redis.get_connection()
+
+        friends = self.get_friends()
+        for friend in friends:
+            connection.rpush('%s:%s' % (FRIEND_FEED, friend), msg.id)
+
+    def push_to_public(self, msg):
+        connection = Redis.get_connection()
+
+        friends = self.get_friends()
+        for friend in friends:
+            connection.rpush('%s:%s' % (PUBLIC_FEED, friend), msg.id)
+
+        followers = self.get_followers()
+        for follower in followers:
+            connection.rpush('%s:%s' % (PUBLIC_FEED, follower), msg.id)
+
+    def publish(self, msg):
+        c = TornadoRedis.get_connection()
+        c.publish('main', json_encode({'type': 'message',
+                                       'data': msg.to_dict()}))
 
     objects = UserManager()

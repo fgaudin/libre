@@ -1,8 +1,7 @@
 from tornado.escape import json_encode, json_decode
-from data import Redis, TornadoRedis
+from data import Redis
 from websocket.manager import Manager
 import datetime
-from user.models import User
 
 MESSAGE_DURATION = 3600
 MESSAGES_TO_FRIENDS = 'fm'
@@ -51,6 +50,7 @@ class MessageManager:
         return self.mget(*msgs, for_me=True)
 
     def on_published(self, socket, data):
+        from user.models import User
         message = Message(**data)
         manager = Manager.get_manager()
         current_user_uid = manager.get_user(socket)
@@ -116,44 +116,5 @@ class Message:
             self.id = self._nextId()
             connection = Redis.get_connection()
             connection.setex('m:%s' % self.id, MESSAGE_DURATION, json_encode(self._to_db()))
-
-    def push_to_self(self, current_user):
-        connection = Redis.get_connection()
-        scope = MESSAGES_TO_PUBLIC if self.scope == 'public' else MESSAGES_TO_FRIENDS
-        connection.rpush("%s:%s" % (scope, current_user.uid), self.id)
-
-    def push_to_friends(self, user):
-        connection = Redis.get_connection()
-        manager = Manager.get_manager()
-
-        friends = user.get_friends()
-        for friend in friends:
-            connection.rpush('%s:%s' % (FRIEND_FEED, friend), self.id)
-
-    def push_to_public(self, user):
-        connection = Redis.get_connection()
-        manager = Manager.get_manager()
-
-        friends = user.get_friends()
-        for friend in friends:
-            connection.rpush('%s:%s' % (PUBLIC_FEED, friend), self.id)
-
-        followers = user.get_followers()
-        for follower in followers:
-            connection.rpush('%s:%s' % (PUBLIC_FEED, follower), self.id)
-
-    def push(self, current_user):
-        self.push_to_self(current_user)
-        if self.scope == 'friends':
-            self.push_to_friends(current_user)
-        elif self.scope == 'public':
-            self.push_to_public(current_user)
-
-        self.publish()
-
-    def publish(self):
-        c = TornadoRedis.get_connection()
-        c.publish('main', json_encode({'type': 'message',
-                                       'data': self.to_dict()}))
 
     objects = MessageManager()
