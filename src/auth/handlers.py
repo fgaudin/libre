@@ -46,7 +46,28 @@ class LogoutHandler(BaseHandler):
         self.write(json_encode({'authenticated': False}))
 
 
-class FacebookGraphLoginHandler(tornado.web.RequestHandler,
+class SocialLoginHandler(tornado.web.RequestHandler):
+    def authenticate(self, prefix, social_id, username, fullname, pic):
+        connection = Redis.get_connection()
+        new_user = False
+        uid = connection.get('{0}:{1}'.format(prefix, social_id))
+        if uid:
+            user = User.objects.find(uid=uid.decode())
+        else:
+            new_user = True
+            user = User.objects.create_user(
+                username,
+                fullname,
+                pic)
+            connection.set('{0}:{1}'.format(prefix, social_id), user.uid)
+
+        token = generate_token()
+        user.authenticate(token)
+        self.set_secure_cookie("auth", token)
+        self.render("redirect.html", new_user=new_user)
+
+
+class FacebookGraphLoginHandler(SocialLoginHandler,
                                 tornado.auth.FacebookGraphMixin):
     @tornado.web.asynchronous
     @tornado.gen.coroutine
@@ -58,30 +79,18 @@ class FacebookGraphLoginHandler(tornado.web.RequestHandler,
                 client_secret=settings.FACEBOOK_APP_SECRET,
                 code=self.get_argument("code"))
 
-            connection = Redis.get_connection()
-            new_user = False
-            uid = connection.get('fb:{0}'.format(fb_data['id']))
-            if uid:
-                user = User.objects.find(uid=uid.decode())
-            else:
-                new_user = True
-                user = User.objects.create_user(
-                    fb_data['name'].lower().replace(' ', '_'),
-                    fb_data['name'],
-                    fb_data['picture']['data']['url'])
-                connection.set('fb:{0}'.format(fb_data['id']), user.uid)
-
-            token = generate_token()
-            user.authenticate(token)
-            self.set_secure_cookie("auth", token)
-            self.render("redirect.html", new_user=new_user)
+            self.authenticate('fb',
+                              fb_data['id'],
+                              fb_data['name'].lower().replace(' ', '_'),
+                              fb_data['name'],
+                              fb_data['picture']['data']['url'])
         else:
             yield self.authorize_redirect(
                 redirect_uri=settings.FACEBOOK_REDIRECT_URI,
                 client_id=settings.FACEBOOK_APP_ID)
 
 
-class GoogleLoginHandler(tornado.web.RequestHandler,
+class GoogleLoginHandler(SocialLoginHandler,
                          tornado.auth.GoogleMixin):
     @tornado.web.asynchronous
     @tornado.gen.coroutine
@@ -89,50 +98,27 @@ class GoogleLoginHandler(tornado.web.RequestHandler,
         if self.get_argument("openid.mode", None):
             google_data = yield self.get_authenticated_user()
 
-            connection = Redis.get_connection()
-            new_user = False
-            uid = connection.get('gg:{0}'.format(google_data['claimed_id']))
-            if uid:
-                user = User.objects.find(uid=uid.decode())
-            else:
-                new_user = True
-                user = User.objects.create_user(
-                    google_data['name'].lower().replace(' ', '_'),
-                    google_data['name'],
-                    '')
-                connection.set('gg:{0}'.format(google_data['claimed_id']), user.uid)
-
-            token = generate_token()
-            user.authenticate(token)
-            self.set_secure_cookie("auth", token)
-            self.render("redirect.html", new_user=new_user)
+            self.authenticate('gg',
+                              google_data['claimed_id'],
+                              google_data['name'].lower().replace(' ', '_'),
+                              google_data['name'],
+                              '')
         else:
             yield self.authenticate_redirect()
 
 
-class TwitterLoginHandler(tornado.web.RequestHandler,
+class TwitterLoginHandler(SocialLoginHandler,
                           tornado.auth.TwitterMixin):
     @tornado.web.asynchronous
     @tornado.gen.coroutine
     def get(self):
         if self.get_argument("oauth_token", None):
             twitter_data = yield self.get_authenticated_user()
-            connection = Redis.get_connection()
-            new_user = False
-            uid = connection.get('tw:{0}'.format(twitter_data['id_str']))
-            if uid:
-                user = User.objects.find(uid=uid.decode())
-            else:
-                new_user = True
-                user = User.objects.create_user(
-                    twitter_data['username'].lower().replace(' ', '_'),
-                    twitter_data['name'],
-                    twitter_data['profile_image_url'])
-                connection.set('tw:{0}'.format(twitter_data['id_str']), user.uid)
 
-            token = generate_token()
-            user.authenticate(token)
-            self.set_secure_cookie("auth", token)
-            self.render("redirect.html", new_user=new_user)
+            self.authenticate('tw',
+                              twitter_data['id_str'],
+                              twitter_data['username'],
+                              twitter_data['name'],
+                              twitter_data['profile_image_url'])
         else:
             yield self.authenticate_redirect()
