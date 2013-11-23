@@ -1,8 +1,11 @@
-from tornado.escape import json_encode, json_decode, linkify
+from tornado.escape import json_encode, json_decode, linkify, _URL_RE
 from tornado.web import authenticated
 from web import BaseHandler
 from message.models import Message
 from user.models import User
+from tornado import gen
+from tornado.httpclient import AsyncHTTPClient
+from bs4 import BeautifulSoup
 
 
 class MessageHandler(BaseHandler):
@@ -28,6 +31,7 @@ class MessageHandler(BaseHandler):
         self.write(json_encode(response))
 
     @authenticated
+    @gen.coroutine
     def post(self):
         user = self.get_current_user()
         message = {}
@@ -39,6 +43,29 @@ class MessageHandler(BaseHandler):
         message['author_pic'] = user.pic
         message['likes'] = 0
         msg_obj = Message(**message)
+
+        result = _URL_RE.search(self.get_argument('body'))
+        if result:
+            try:
+                url = result.group()
+                http_client = AsyncHTTPClient()
+                response = yield http_client.fetch(url)
+                soup = BeautifulSoup(response.body, 'lxml')
+
+                try:
+                    oembed_link = soup.find('link', {'rel': 'alternate', 'type': 'application/json+oembed'}).attrs['href']
+                    http_client = AsyncHTTPClient()
+                    oembed = yield http_client.fetch(oembed_link)
+                    json = json_decode(oembed.body)
+                    msg_obj.add_link(url, json['title'], json['thumbnail_url'],
+                                     json['thumbnail_width'], json['thumbnail_height'])
+                except:
+                    title = soup.title
+                    if title:
+                        msg_obj.add_link(url, title.string)
+            except:
+                pass
+
         msg_obj.save()
         user.push_message(msg_obj)
 

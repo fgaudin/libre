@@ -134,6 +134,16 @@
                     <div class="content">
                         {{!message.body}}
                     </div>
+                    {{!# if message.url }}
+                    <div class="link">
+                        <a {{! bind-attr href=message.url}}" target="_blank">
+                            <h3>{{! message.title}}</h3>
+                            {{!# if message.pic }}
+                            <img {{! bind-attr src=message.pic}}  {{! bind-attr width=message.width}}" {{! bind-attr height=message.height}}" />
+                            {{!/if}}
+                        </a>
+                    </div>
+                    {{!/if}}
                 </div>
                 <div class="message-actions">
                     <div class="pure-g-r">

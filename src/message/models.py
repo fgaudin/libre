@@ -72,7 +72,8 @@ class MessageManager:
 class Message:
     def __init__(self, scope, body, author_uid, author_username,
                  author_fullname, author_pic, date=None, likes=0,
-                 for_me=False, id=None, *args, **kwargs):
+                 for_me=False, url='', title='', pic='', width='',
+                 height='', id=None, *args, **kwargs):
         self.id = id
         self.scope = scope
         self.body = body
@@ -84,6 +85,19 @@ class Message:
         self.likes = likes
         self.for_me = for_me
 
+        self.url = url
+        self.title = title
+        self.pic = pic
+        self.width = width
+        self.height = height
+
+    def add_link(self, url, title, pic='', width='', height=''):
+        self.url = url
+        self.title = title
+        self.pic = pic
+        self.width = width
+        self.height = height
+
     def to_dict(self):
         return {'id': self.id,
                 'scope': self.scope,
@@ -94,7 +108,13 @@ class Message:
                 'author_pic': self.author_pic,
                 'date': self.date,
                 'likes': self.likes,
-                'forMe': self.for_me}
+                'forMe': self.for_me,
+                'url': self.url,
+                'title': self.title,
+                'pic': self.pic,
+                'width': self.width,
+                'height': self.height
+                }
 
     def _to_db(self):
         return {'id': self.id,
@@ -105,7 +125,13 @@ class Message:
                 'author_fullname': self.author_fullname,
                 'author_pic': self.author_pic,
                 'date': self.date,
-                'likes': self.likes}
+                'likes': self.likes,
+                'url': self.url,
+                'title': self.title,
+                'pic': self.pic,
+                'width': self.width,
+                'height': self.height
+                }
 
     def _nextId(self):
         connection = Redis.get_connection()

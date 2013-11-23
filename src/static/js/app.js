@@ -76,6 +76,12 @@ App.Message = DS.Model.extend({
   scope: DS.attr('string'),
   forMe: DS.attr('boolean'),
 
+  url: DS.attr('string'),
+  title: DS.attr('string'),
+  pic: DS.attr('string'),
+  width: DS.attr('number'),
+  height: DS.attr('number'),
+
   numericId: function(){
       return parseInt(this.get('id'), 10);
   }.property('id'),
