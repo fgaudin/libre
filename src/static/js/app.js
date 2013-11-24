@@ -82,6 +82,18 @@ App.Message = DS.Model.extend({
   width: DS.attr('number'),
   height: DS.attr('number'),
 
+  comments: function(){
+      var msg_id = this.get('id');
+      result = this.get('store').filter('comment', function(comment){
+          return comment.get('msg_id') == msg_id;
+      });
+      return result;
+  }.property(),
+  getComments: function(){
+      var msg_id = this.get('id');
+      this.get('store').find('comment', {message_id: msg_id});
+  },
+
   numericId: function(){
       return parseInt(this.get('id'), 10);
   }.property('id'),
@@ -91,6 +103,14 @@ App.Message = DS.Model.extend({
       }
       return '';
   }.property('date')
+});
+
+App.Comment = DS.Model.extend({
+    content: DS.attr('string'),
+    author_username: DS.attr('string'),
+    author_fullname: DS.attr('string'),
+    author_pic: DS.attr('string'),
+    msg_id: DS.attr('number')
 });
 
 App.LibreController = Ember.Controller.extend({
@@ -178,6 +198,27 @@ App.LibreIndexController = Ember.ArrayController.extend({
          twitterLogin: function(){
              window.open("/login/twitter", "_blank", "height=400,width=600");
          }
+    }
+});
+
+App.MessageTplComponent = Ember.Component.extend({
+    commentsShown: false,
+    actions: {
+        showComments: function(message){
+            message.getComments();
+            this.set('commentsShown', true);
+        },
+        comment: function(message){
+            var comment = this.get('newComment');
+            var comp = this;
+            App.$.post('/comments', {
+                message_id: message.id,
+                comment: comment
+            }, function(response){
+                console.log('sent');
+                comp.set('newComment', '');
+            }, 'json');
+        }
     }
 });
 
