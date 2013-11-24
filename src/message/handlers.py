@@ -37,9 +37,13 @@ class MessageHandler(BaseHandler):
 
         via = self.get_argument('via', None)
         body = self.get_argument('body')
+
+        soup = BeautifulSoup(body, 'lxml')
+        body = " ".join(soup.stripped_strings)
+
         message = {}
         message['scope'] = self.get_argument('scope')
-        message['body'] = linkify(body, True, 'target="_blank"')
+        message['body'] = linkify(body, extra_params='target="_blank"')
         message['author_uid'] = user.uid
         message['author_fullname'] = user.fullname
         message['author_username'] = user.username

@@ -20,6 +20,7 @@ h2 {
 a, a:hover {
     color: #326342;
     text-decoration: none;
+    word-wrap: break-word;
 }
 .menu a, .menu a:hover {
     color: #FFF;
