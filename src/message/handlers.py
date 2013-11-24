@@ -22,7 +22,7 @@ class MessageHandler(BaseHandler):
                 user = User.objects.find(username=username)
                 if user.is_friend(current_user):
                     messages.extend(Message.objects.get_messages_to_friends(user))
-                messages.extend(Message.objects.get_messages_to_public(user))
+                messages.extend(Message.objects.get_messages_to_public(current_user, user))
             else:
                 if current_user:
                     messages = Message.objects.get_friends_feed(current_user) + Message.objects.get_public_feed(current_user)
@@ -52,6 +52,7 @@ class MessageHandler(BaseHandler):
         if via:
             message['via_username'] = via
             message['via_fullname'] = User.objects.find(username=via).fullname
+
         msg_obj = Message(**message)
 
         result = _URL_RE.search(body)

@@ -267,7 +267,7 @@ App.UserProfileRoute = Ember.Route.extend({
     model: function (params) {
         console.log(params.username);
         this.set('username', params.username);
-        return this.modelFor('libre');
+        return this.get('store').find('message', {username: this.get('username')});
     },
     setupController: function(controller, model) {
         this._super(controller, model);
@@ -280,17 +280,13 @@ App.UserProfileIndexController = Ember.ArrayController.extend({
     sortProperties: ['numericId'],
     sortAscending: false,
     author: function(){
-        var username = this.get('username');
-        console.log('author: ' + username);
-        return this.get('store').find('user', username);
+        return this.get('store').find('user', this.get('username'));
     }.property('username'),
     friends: function(){
-        console.log("-> " + this.get('username'));
         return this.filterBy('scope', 'friends').filterBy('author_username', this.get('username'));
     }.property('model.@each', 'username'),
     public: function(){
-        //return this.filterBy('scope', 'public').filterBy('author_username', this.get('username'));
-        return this.get('store').find('message', {username: this.get('username')});
+        return this.filterBy('scope', 'public').filterBy('author_username', this.get('username'));
     }.property('model.@each', 'username'),
     actions: {
         toggle_friend: function(){

@@ -113,6 +113,8 @@ class User:
         connection.setex('%s:%s' % (TOKEN, token), 3600, self.uid)
 
     def is_friend(self, current_user):
+        if self.uid == current_user.uid:
+            return True
         connection = Redis.get_connection()
         return connection.sismember('%s:%s' % (FRIENDS, self.uid), current_user.uid)
 
@@ -151,7 +153,7 @@ class User:
     def follow(self, user):
         connection = Redis.get_connection()
         connection.sadd("%s:%s" % (FOLLOWERS, user.uid), self.uid)
-        last_messages = Message.objects.get_messages_to_public(user)
+        last_messages = Message.objects.get_messages_to_public(self, user)
         for msg in last_messages:
             connection.lpush('%s:%s' % (PUBLIC_FEED, self.uid), msg.id)
         self.send_messages(last_messages)
@@ -165,6 +167,8 @@ class User:
         user.decr_counter('followers')
 
     def is_followed_by(self, current_user):
+        if self.uid == current_user.uid:
+            return True
         connection = Redis.get_connection()
         return connection.sismember('%s:%s' % (FOLLOWERS, self.uid),
                                     current_user.uid)

@@ -21,7 +21,7 @@ class MessageManager:
             return Message(id=id, ** json_decode(msg))
         return None
 
-    def mget(self, *args, for_me=False):
+    def mget(self, *args):
         if not len(args):
             return []
         connection = Redis.get_connection()
@@ -34,14 +34,17 @@ class MessageManager:
         msgs = []
         msgs.extend(connection.lrange('%s:%s' % (MESSAGES_TO_FRIENDS, user.uid), 0, limit))
         liked = user.get_liked()
-        return [Message(liked=(str(msg['id']).encode() in liked), **msg) for msg in self.mget(*msgs)]
+        return [Message(for_me=True, liked=(str(msg['id']).encode() in liked), **msg) for msg in self.mget(*msgs)]
 
-    def get_messages_to_public(self, user, limit=5):
+    def get_messages_to_public(self, current_user, user, limit=5):
         connection = Redis.get_connection()
         msgs = []
         msgs.extend(connection.lrange('%s:%s' % (MESSAGES_TO_PUBLIC, user.uid), 0, limit))
         liked = user.get_liked()
-        return [Message(liked=(str(msg['id']).encode() in liked), **msg) for msg in self.mget(*msgs)]
+        for_me = False
+        if current_user.is_friend(user) or user.is_followed_by(current_user):
+            for_me = True
+        return [Message(for_me=for_me, liked=(str(msg['id']).encode() in liked), **msg) for msg in self.mget(*msgs)]
 
     def get_friends_feed(self, user):
         connection = Redis.get_connection()
