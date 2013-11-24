@@ -4,6 +4,7 @@ import hashlib
 from message.models import MESSAGES_TO_FRIENDS, MESSAGES_TO_PUBLIC, FRIEND_FEED, \
     PUBLIC_FEED, Message
 from websocket.manager import Manager
+from conf import settings
 
 TOKEN = 't'
 USER = 'u'
@@ -170,7 +171,7 @@ class User:
 
     def get_followers(self):
         connection = Redis.get_connection()
-        return [self.uid] + [follower.decode() for follower in connection.smembers("%s:%s" % (FOLLOWERS, self.uid))]
+        return [follower.decode() for follower in connection.smembers("%s:%s" % (FOLLOWERS, self.uid))]
 
     def get_counters(self):
         if not self._counters:
@@ -255,25 +256,29 @@ class User:
     def push_to_self(self, msg):
         connection = Redis.get_connection()
         scope = MESSAGES_TO_PUBLIC if msg.scope == 'public' else MESSAGES_TO_FRIENDS
-        connection.lpush("%s:%s" % (scope, self.uid), msg.id)
+        connection.lpush("{0}:{1}".format(scope, self.uid), msg.id)
+        connection.ltrim("{0}:{1}".format(scope, self.uid), 0, settings.FEED_SIZE - 1)
 
     def push_to_friends(self, msg):
         connection = Redis.get_connection()
 
         friends = self.get_friends()
         for friend in friends:
-            connection.lpush('%s:%s' % (FRIEND_FEED, friend), msg.id)
+            connection.lpush("{0}:{1}".format(FRIEND_FEED, friend), msg.id)
+            connection.ltrim("{0}:{1}".format(FRIEND_FEED, friend), 0, settings.FEED_SIZE - 1)
 
     def push_to_public(self, msg):
         connection = Redis.get_connection()
 
         friends = self.get_friends()
         for friend in friends:
-            connection.lpush('%s:%s' % (PUBLIC_FEED, friend), msg.id)
+            connection.lpush("{0}:{1}".format(PUBLIC_FEED, friend), msg.id)
+            connection.ltrim("{0}:{1}".format(PUBLIC_FEED, friend), 0, settings.FEED_SIZE - 1)
 
         followers = self.get_followers()
         for follower in followers:
-            connection.lpush('%s:%s' % (PUBLIC_FEED, follower), msg.id)
+            connection.lpush("{0}:{1}".format(PUBLIC_FEED, follower), msg.id)
+            connection.ltrim("{0}:{1}".format(PUBLIC_FEED, follower), 0, settings.FEED_SIZE - 1)
 
     def publish(self, msg):
         c = TornadoRedis.get_connection()

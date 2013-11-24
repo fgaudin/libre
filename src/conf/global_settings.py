@@ -1,6 +1,7 @@
 HOST = ''  # e.g. mydomain.com
 
-MESSAGE_DURATION = 3600
+MESSAGE_DURATION = 86400
+FEED_SIZE = 100
 
 FACEBOOK_APP_ID = ''
 FACEBOOK_APP_SECRET = ''
@@ -10,8 +11,8 @@ TWITTER_CONSUMER_KEY = ''
 TWITTER_CONSUMER_SECRET = ''
 
 REDIS = {
-    'host':'127.0.0.1',
-    'port':6379,
-    'password':None,
+    'host': '127.0.0.1',
+    'port': 6379,
+    'password': None,
     'db': 0,
 }
