@@ -34,17 +34,23 @@ class MessageHandler(BaseHandler):
     @gen.coroutine
     def post(self):
         user = self.get_current_user()
+
+        via = self.get_argument('via', None)
+        body = self.get_argument('body')
         message = {}
         message['scope'] = self.get_argument('scope')
-        message['body'] = linkify(self.get_argument('body'), True, 'target="_blank"')
+        message['body'] = linkify(body, True, 'target="_blank"')
         message['author_uid'] = user.uid
         message['author_fullname'] = user.fullname
         message['author_username'] = user.username
         message['author_pic'] = user.pic
         message['likes'] = 0
+        if via:
+            message['via_username'] = via
+            message['via_fullname'] = User.objects.find(username=via).fullname
         msg_obj = Message(**message)
 
-        result = _URL_RE.search(self.get_argument('body'))
+        result = _URL_RE.search(body)
         if result:
             try:
                 url = result.group()

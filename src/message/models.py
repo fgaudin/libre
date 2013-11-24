@@ -80,7 +80,8 @@ class Message:
     def __init__(self, id=None, scope='', body='', author_uid='',
                  author_username='', author_fullname='', author_pic='',
                  date=None, for_me=False, url='', title='', pic='', width='',
-                 height='', liked=False, *args, **kwargs):
+                 height='', liked=False, via_username=None,
+                 via_fullname=None, *args, **kwargs):
 
         self.id = id
         self.scope = scope
@@ -92,6 +93,8 @@ class Message:
         self.date = date or datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.for_me = for_me
         self.liked = liked
+        self.via_username = via_username
+        self.via_fullname = via_fullname
 
         self.url = url
         self.title = title
@@ -160,6 +163,8 @@ class Message:
                 'height': self.height,
                 'like_count': self.like_count(),
                 'comment_count': self.comment_count(),
+                'via_username': self.via_username,
+                'via_fullname': self.via_fullname,
                 }
 
     def _to_db(self):
@@ -175,7 +180,9 @@ class Message:
                 'title': self.title,
                 'pic': self.pic,
                 'width': self.width,
-                'height': self.height
+                'height': self.height,
+                'via_username': self.via_username,
+                'via_fullname': self.via_fullname,
                 }
 
     def _nextId(self):

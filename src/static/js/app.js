@@ -81,6 +81,8 @@ App.Message = DS.Model.extend({
   comment_count: DS.attr('number'),
   scope: DS.attr('string'),
   forMe: DS.attr('boolean'),
+  via_username: DS.attr('string'),
+  via_fullname: DS.attr('string'),
 
   url: DS.attr('string'),
   title: DS.attr('string'),
@@ -108,7 +110,10 @@ App.Message = DS.Model.extend({
           return this.get('date').toLocaleString();
       }
       return '';
-  }.property('date')
+  }.property('date'),
+  forFriends: function(){
+      return this.get('scope') == 'friends';
+  }.property('scope')
 });
 
 App.Comment = DS.Model.extend({
@@ -236,6 +241,20 @@ App.MessageTplComponent = Ember.Component.extend({
             }, function(response){
                 comp.set('newComment', '');
             }, 'json');
+        },
+        repostToFriends: function(message){
+            App.$.post('/messages', {
+                body: message.get('body'),
+                scope: 'friends',
+                via: message.get('via_username') || message.get('author_username')
+            });
+        },
+        repostToPublic: function(message){
+            App.$.post('/messages', {
+                body: message.get('body'),
+                scope: 'public',
+                via: message.get('via_username') || message.get('author_username')
+            });
         }
     }
 });
