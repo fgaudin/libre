@@ -1,6 +1,6 @@
 from tornado.options import define, parse_command_line, options
 from index.handlers import IndexHandler
-from message.handlers import MessageHandler
+from message.handlers import MessageHandler, LikeHandler
 from websocket.handlers import WebSocketHandler
 from tornado import web, ioloop
 from auth.handlers import FacebookGraphLoginHandler, \
@@ -26,6 +26,7 @@ def main():
             (r"/socket", WebSocketHandler),
             (r"/messages", MessageHandler),
             (r"/messages/([0-9]+)", MessageHandler),
+            (r"/like", LikeHandler),
             (r"/comments", CommentHandler),
             (r"/users/([a-zA-Z0-9_]+)", UserHandler),
             ],

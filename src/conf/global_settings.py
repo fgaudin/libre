@@ -1,5 +1,7 @@
 HOST = ''  # e.g. mydomain.com
 
+MESSAGE_DURATION = 3600
+
 FACEBOOK_APP_ID = ''
 FACEBOOK_APP_SECRET = ''
 FACEBOOK_REDIRECT_URI = ''

@@ -70,3 +70,17 @@ class MessageHandler(BaseHandler):
         user.push_message(msg_obj)
 
         self.write(json_encode(msg_obj.to_dict()))
+
+
+class LikeHandler(BaseHandler):
+    def post(self):
+        message_id = self.get_argument('message_id')
+        user = self.get_current_user()
+        liked = False
+        if user.likes(message_id):
+            user.unlike(message_id)
+        else:
+            user.like(message_id)
+            liked = True
+
+        self.write(json_encode({'liked': liked}))

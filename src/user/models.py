@@ -1,7 +1,6 @@
 from data import Redis, TornadoRedis
 from tornado.escape import json_encode, json_decode
 import hashlib
-from auth import generate_token
 from message.models import MESSAGES_TO_FRIENDS, MESSAGES_TO_PUBLIC, FRIEND_FEED, \
     PUBLIC_FEED, Message
 from websocket.manager import Manager
@@ -12,6 +11,7 @@ REVERSE_USER = 'ru'
 FRIENDS = 'f'
 FRIEND_REQUESTS = 'fr'
 FOLLOWERS = 'fw'
+LIKES = 'l'
 
 
 class UserManager:
@@ -154,6 +154,27 @@ class User:
     def get_followers(self):
         connection = Redis.get_connection()
         return [self.uid] + [follower.decode() for follower in connection.smembers("%s:%s" % (FOLLOWERS, self.uid))]
+
+    def get_liked(self):
+        connection = Redis.get_connection()
+        return connection.smembers('{0}:{1}'.format(LIKES, self.uid))
+
+    def likes(self, msg_id):
+        connection = Redis.get_connection()
+        return connection.sismember('{0}:{1}'.format(LIKES, self.uid),
+                                    msg_id)
+
+    def like(self, msg_id):
+        connection = Redis.get_connection()
+        connection.sadd('{0}:{1}'.format(LIKES, self.uid), msg_id)
+        message = Message(id=msg_id)
+        message.incr_like()
+
+    def unlike(self, msg_id):
+        connection = Redis.get_connection()
+        connection.srem('{0}:{1}'.format(LIKES, self.uid), msg_id)
+        message = Message(id=msg_id)
+        message.decr_like()
 
     def send_messages(self, messages, uid=None):
         manager = Manager.get_manager()

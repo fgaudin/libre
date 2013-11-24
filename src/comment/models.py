@@ -1,5 +1,6 @@
 from data import Redis
 from tornado.escape import json_encode, json_decode
+from message.models import Message
 
 COMMENT = 'c'
 
@@ -44,3 +45,5 @@ class Comment:
         connection = Redis.get_connection()
         connection.rpush('{0}:{1}'.format(COMMENT, self.msg_id),
                          json_encode(self._to_db()))
+        message = Message(id=self.msg_id)
+        message.incr_comment()

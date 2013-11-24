@@ -71,8 +71,9 @@ App.Message = DS.Model.extend({
   author_fullname: DS.attr('string'),
   author_pic: DS.attr('string'),
   date: DS.attr('date'),
-  likes: DS.attr('number'),
+  like_count: DS.attr('number'),
   liked: DS.attr('boolean'),
+  comment_count: DS.attr('number'),
   scope: DS.attr('string'),
   forMe: DS.attr('boolean'),
 
@@ -204,6 +205,19 @@ App.LibreIndexController = Ember.ArrayController.extend({
 App.MessageTplComponent = Ember.Component.extend({
     commentsShown: false,
     actions: {
+        like: function(message){
+            var value = !message.get('liked');
+            message.set('liked', value);
+            if (value) {
+                message.incrementProperty('like_count');
+            } else {
+                message.decrementProperty('like_count');
+            }
+            App.$.post('/like', {
+                message_id: message.id
+            }, function(response){
+            }, 'json');
+        },
         showComments: function(message){
             message.getComments();
             this.set('commentsShown', true);
@@ -215,7 +229,6 @@ App.MessageTplComponent = Ember.Component.extend({
                 message_id: message.id,
                 comment: comment
             }, function(response){
-                console.log('sent');
                 comp.set('newComment', '');
             }, 'json');
         }

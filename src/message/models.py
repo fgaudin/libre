@@ -2,8 +2,10 @@ from tornado.escape import json_encode, json_decode
 from data import Redis
 from websocket.manager import Manager
 import datetime
+from conf import settings
 
-MESSAGE_DURATION = 3600
+MESSAGE = 'm'
+MESSAGE_COUNTERS = 'mc'
 MESSAGES_TO_FRIENDS = 'fm'
 MESSAGES_TO_PUBLIC = 'pm'
 FRIEND_FEED = 'ff'
@@ -13,7 +15,7 @@ PUBLIC_FEED = 'pf'
 class MessageManager:
     def get(self, id):
         connection = Redis.get_connection()
-        msg = connection.get('m:%s' % id)
+        msg = connection.get('{0}:{1}'.format(MESSAGE, id))
         if msg:
             return Message(id=id, ** json_decode(msg))
         return None
@@ -22,32 +24,37 @@ class MessageManager:
         if not len(args):
             return []
         connection = Redis.get_connection()
-        messages = connection.mget(['m:%s' % id.decode() for id in args])
-        return [Message(for_me=for_me, **json_decode(msg)) for msg in messages if msg]
+        messages = connection.mget(['{0}:{1}'.format(MESSAGE, id.decode()) for id in args])
+        return [json_decode(msg) for msg in messages if msg]
+        # return [Message(for_me=for_me, **json_decode(msg)) for msg in messages if msg]
 
     def get_messages_to_friends(self, user, limit=5):
         connection = Redis.get_connection()
         msgs = []
         msgs.extend(connection.lrange('%s:%s' % (MESSAGES_TO_FRIENDS, user.uid), 0, limit))
-        return self.mget(*msgs)
+        liked = user.get_liked()
+        return [Message(liked=(str(msg['id']).encode() in liked), **msg) for msg in self.mget(*msgs)]
 
     def get_messages_to_public(self, user, limit=5):
         connection = Redis.get_connection()
         msgs = []
         msgs.extend(connection.lrange('%s:%s' % (MESSAGES_TO_PUBLIC, user.uid), 0, limit))
-        return self.mget(*msgs)
+        liked = user.get_liked()
+        return [Message(liked=(str(msg['id']).encode() in liked), **msg) for msg in self.mget(*msgs)]
 
     def get_friends_feed(self, user):
         connection = Redis.get_connection()
         msgs = []
         msgs.extend(connection.lrange('%s:%s' % (FRIEND_FEED, user.uid), 0, -1))
-        return self.mget(*msgs, for_me=True)
+        liked = user.get_liked()
+        return [Message(for_me=True, liked=(str(msg['id']).encode() in liked), **msg) for msg in self.mget(*msgs)]
 
     def get_public_feed(self, user):
         connection = Redis.get_connection()
         msgs = []
         msgs.extend(connection.lrange('%s:%s' % (PUBLIC_FEED, user.uid), 0, -1))
-        return self.mget(*msgs, for_me=True)
+        liked = user.get_liked()
+        return [Message(for_me=True, liked=(str(msg['id']).encode() in liked), **msg) for msg in self.mget(*msgs)]
 
     def on_published(self, socket, data):
         from user.models import User
@@ -70,10 +77,11 @@ class MessageManager:
 
 
 class Message:
-    def __init__(self, scope, body, author_uid, author_username,
-                 author_fullname, author_pic, date=None, likes=0,
-                 for_me=False, url='', title='', pic='', width='',
-                 height='', id=None, *args, **kwargs):
+    def __init__(self, id=None, scope='', body='', author_uid='',
+                 author_username='', author_fullname='', author_pic='',
+                 date=None, for_me=False, url='', title='', pic='', width='',
+                 height='', liked=False, *args, **kwargs):
+
         self.id = id
         self.scope = scope
         self.body = body
@@ -82,14 +90,16 @@ class Message:
         self.author_fullname = author_fullname
         self.author_pic = author_pic
         self.date = date or datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.likes = likes
         self.for_me = for_me
+        self.liked = liked
 
         self.url = url
         self.title = title
         self.pic = pic
         self.width = width
         self.height = height
+
+        self._counters = None
 
     def add_link(self, url, title, pic='', width='', height=''):
         self.url = url
@@ -97,6 +107,42 @@ class Message:
         self.pic = pic
         self.width = width
         self.height = height
+
+    def getCounters(self):
+        if not self._counters:
+            connection = Redis.get_connection()
+            result = connection.hmget('{0}:{1}'.format(MESSAGE_COUNTERS, self.id),
+                                      ['likes', 'comments'])
+            self._counters = {'likes': int(result[0]),
+                              'comments': int(result[1])}
+
+    @property
+    def likes(self):
+        self.getCounters()
+        return self._counters['likes']
+
+    def incr_like(self):
+        connection = Redis.get_connection()
+        connection.hincrby('{0}:{1}'.format(MESSAGE_COUNTERS, self.id),
+                           'likes')
+        self._counters = None
+
+    def decr_like(self):
+        connection = Redis.get_connection()
+        connection.hincrby('{0}:{1}'.format(MESSAGE_COUNTERS, self.id),
+                           'likes', -1)
+        self._counters = None
+
+    @property
+    def comments(self):
+        self.getCounters()
+        return self._counters['comments']
+
+    def incr_comment(self):
+        connection = Redis.get_connection()
+        connection.hincrby('{0}:{1}'.format(MESSAGE_COUNTERS, self.id),
+                           'comments')
+        self._counters = None
 
     def to_dict(self):
         return {'id': self.id,
@@ -107,13 +153,15 @@ class Message:
                 'author_fullname': self.author_fullname,
                 'author_pic': self.author_pic,
                 'date': self.date,
-                'likes': self.likes,
                 'forMe': self.for_me,
+                'liked': self.liked,
                 'url': self.url,
                 'title': self.title,
                 'pic': self.pic,
                 'width': self.width,
-                'height': self.height
+                'height': self.height,
+                'like_count': self.likes,
+                'comment_count': self.comments,
                 }
 
     def _to_db(self):
@@ -125,7 +173,6 @@ class Message:
                 'author_fullname': self.author_fullname,
                 'author_pic': self.author_pic,
                 'date': self.date,
-                'likes': self.likes,
                 'url': self.url,
                 'title': self.title,
                 'pic': self.pic,
@@ -141,6 +188,12 @@ class Message:
         if not self.id:
             self.id = self._nextId()
             connection = Redis.get_connection()
-            connection.setex('m:%s' % self.id, MESSAGE_DURATION, json_encode(self._to_db()))
+            connection.setex('{0}:{1}'.format(MESSAGE, self.id),
+                             settings.MESSAGE_DURATION,
+                             json_encode(self._to_db()))
+            connection.hmset('{0}:{1}'.format(MESSAGE_COUNTERS, self.id),
+                             {'likes': 0, 'comments': 0})
+            connection.expire('{0}:{1}'.format(MESSAGE_COUNTERS, self.id),
+                              settings.MESSAGE_DURATION)
 
     objects = MessageManager()
