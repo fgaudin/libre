@@ -67,4 +67,5 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
     def on_close(self):
         print("Client closed")
+        self.client.disconnect()
         self.manager.unregister(self)
