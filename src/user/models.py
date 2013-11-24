@@ -12,6 +12,7 @@ FRIENDS = 'f'
 FRIEND_REQUESTS = 'fr'
 FOLLOWERS = 'fw'
 LIKES = 'l'
+USER_COUNTERS = 'uc'
 
 
 class UserManager:
@@ -59,6 +60,8 @@ class User:
         self.fullname = fullname
         self.pic = pic
 
+        self._counters = None
+
     def to_dict(self):
         return {'id': self.username,
                 'uid': self.uid,
@@ -81,6 +84,11 @@ class User:
 
         connection.set('%s:%s' % (REVERSE_USER, self.username),
                                   json_encode(self._to_db()))
+        connection.hmset('{0}:{1}'.format(USER_COUNTERS, self.uid),
+                                          {'friends': 0,
+                                           'followers': 0,
+                                           'following': 0,
+                                           'messages': 0})
 
     def update(self, username, fullname):
         connection = Redis.get_connection()
@@ -129,11 +137,15 @@ class User:
         connection.sadd("%s:%s" % (FRIENDS, self.uid), user.uid)
         connection.sadd("%s:%s" % (FRIENDS, user.uid), self.uid)
         self.cancel_request_from(user)
+        self.incr_counter('friends')
+        user.incr_counter('friends')
 
     def unfriend(self, current_user):
         connection = Redis.get_connection()
         connection.srem("%s:%s" % (FRIENDS, self.uid), current_user.uid)
         connection.srem("%s:%s" % (FRIENDS, current_user.uid), self.uid)
+        self.decr_counter('friends')
+        current_user.decr_counter('friends')
 
     def follow(self, user):
         connection = Redis.get_connection()
@@ -142,18 +154,61 @@ class User:
         for msg in last_messages:
             connection.lpush('%s:%s' % (PUBLIC_FEED, self.uid), msg.id)
         self.send_messages(last_messages)
+        self.incr_counter('following')
+        user.incr_counter('followers')
 
     def unfollow(self, user):
         connection = Redis.get_connection()
         connection.srem("%s:%s" % (FOLLOWERS, user.uid), self.uid)
+        self.decr_counter('following')
+        user.decr_counter('followers')
 
     def is_followed_by(self, current_user):
         connection = Redis.get_connection()
-        return connection.sismember('%s:%s' % (FOLLOWERS, self.uid), current_user.uid)
+        return connection.sismember('%s:%s' % (FOLLOWERS, self.uid),
+                                    current_user.uid)
 
     def get_followers(self):
         connection = Redis.get_connection()
         return [self.uid] + [follower.decode() for follower in connection.smembers("%s:%s" % (FOLLOWERS, self.uid))]
+
+    def get_counters(self):
+        if not self._counters:
+            connection = Redis.get_connection()
+            result = connection.hmget('{0}:{1}'.format(USER_COUNTERS, self.uid),
+                                      ['friends', 'followers',
+                                       'following', 'messages'])
+            self._counters = {'friends': int(result[0]),
+                              'followers': int(result[1]),
+                              'following': int(result[2]),
+                              'messages': int(result[3])}
+
+    def _get_counter(self, counter):
+        self.get_counters()
+        return self._counters[counter]
+
+    def get_friend_count(self):
+        return self._get_counter('friends')
+
+    def get_follower_count(self):
+        return self._get_counter('followers')
+
+    def get_following_count(self):
+        return self._get_counter('following')
+
+    def get_message_count(self):
+        return self._get_counter('messages')
+
+    def incr_counter(self, counter):
+        connection = Redis.get_connection()
+        connection.hincrby('{0}:{1}'.format(USER_COUNTERS, self.uid),
+                           counter)
+
+    def decr_counter(self, counter):
+        connection = Redis.get_connection()
+        connection.hincrby('{0}:{1}'.format(USER_COUNTERS, self.uid),
+                           counter,
+                           - 1)
 
     def get_liked(self):
         connection = Redis.get_connection()

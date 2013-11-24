@@ -67,6 +67,7 @@ class MessageHandler(BaseHandler):
                 pass
 
         msg_obj.save()
+        user.incr_counter('messages')
         user.push_message(msg_obj)
 
         self.write(json_encode(msg_obj.to_dict()))

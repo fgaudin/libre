@@ -108,7 +108,7 @@ class Message:
         self.width = width
         self.height = height
 
-    def getCounters(self):
+    def get_counters(self):
         if not self._counters:
             connection = Redis.get_connection()
             result = connection.hmget('{0}:{1}'.format(MESSAGE_COUNTERS, self.id),
@@ -116,9 +116,8 @@ class Message:
             self._counters = {'likes': int(result[0]),
                               'comments': int(result[1])}
 
-    @property
-    def likes(self):
-        self.getCounters()
+    def like_count(self):
+        self.get_counters()
         return self._counters['likes']
 
     def incr_like(self):
@@ -133,9 +132,8 @@ class Message:
                            'likes', -1)
         self._counters = None
 
-    @property
-    def comments(self):
-        self.getCounters()
+    def comment_count(self):
+        self.get_counters()
         return self._counters['comments']
 
     def incr_comment(self):
@@ -160,8 +158,8 @@ class Message:
                 'pic': self.pic,
                 'width': self.width,
                 'height': self.height,
-                'like_count': self.likes,
-                'comment_count': self.comments,
+                'like_count': self.like_count(),
+                'comment_count': self.comment_count(),
                 }
 
     def _to_db(self):

@@ -52,6 +52,11 @@ App.User = DS.Model.extend({
     friend_waiting: DS.attr('boolean'),
     followed: DS.attr('boolean'),
 
+    friends: DS.attr('number'),
+    followers: DS.attr('number'),
+    following: DS.attr('number'),
+    messages: DS.attr('number'),
+
     friend_state: function(){
         if (this.get('friend')) {
             return 'Friends';

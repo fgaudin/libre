@@ -45,6 +45,11 @@ class UserHandler(BaseHandler):
         if current_user:
             data['followed'] = user.is_followed_by(current_user)
 
+        data['friends'] = user.get_friend_count()
+        data['followers'] = user.get_follower_count()
+        data['following'] = user.get_following_count()
+        data['messages'] = user.get_message_count()
+
         response = {'user': data}
 
         self.write(json_encode(response))
