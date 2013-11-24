@@ -3,6 +3,7 @@ from data import Redis
 from websocket.manager import Manager
 import datetime
 from conf import settings
+from comment.models import COMMENT
 
 MESSAGE = 'm'
 MESSAGE_COUNTERS = 'mc'
@@ -128,6 +129,7 @@ class Message:
         connection.hincrby('{0}:{1}'.format(MESSAGE_COUNTERS, self.id),
                            'likes')
         self._counters = None
+        self.reset_ttl()
 
     def decr_like(self):
         connection = Redis.get_connection()
@@ -144,6 +146,7 @@ class Message:
         connection.hincrby('{0}:{1}'.format(MESSAGE_COUNTERS, self.id),
                            'comments')
         self._counters = None
+        self.reset_ttl()
 
     def to_dict(self):
         return {'id': self.id,
@@ -200,5 +203,14 @@ class Message:
                              {'likes': 0, 'comments': 0})
             connection.expire('{0}:{1}'.format(MESSAGE_COUNTERS, self.id),
                               settings.MESSAGE_DURATION)
+
+    def reset_ttl(self):
+        connection = Redis.get_connection()
+        connection.expire('{0}:{1}'.format(MESSAGE, self.id),
+                          settings.MESSAGE_DURATION)
+        connection.expire('{0}:{1}'.format(MESSAGE_COUNTERS, self.id),
+                          settings.MESSAGE_DURATION)
+        connection.expire('{0}:{1}'.format(COMMENT, self.id),
+                          settings.MESSAGE_DURATION)
 
     objects = MessageManager()
