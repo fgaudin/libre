@@ -1,5 +1,6 @@
-from data import Redis
+from data import Redis, TornadoRedis
 from tornado.escape import json_encode, json_decode
+from websocket.manager import Manager
 
 COMMENT = 'c'
 
@@ -9,6 +10,11 @@ class CommentManager:
         connection = Redis.get_connection()
         result = connection.lrange('{0}:{1}'.format(COMMENT, msg_id), 0, -1)
         return [Comment(msg_id=msg_id, **json_decode(c)) for c in result]
+
+    def on_published(self, socket, data):
+        comment = Comment(**data)
+        socket.write_message(json_encode({'type': 'comment',
+                                          'data': [comment.to_dict()]}))
 
 
 class Comment:
@@ -47,3 +53,9 @@ class Comment:
                          json_encode(self._to_db()))
         message = Message(id=self.msg_id)
         message.incr_comment()
+
+    def publish(self):
+        c = TornadoRedis.get_connection()
+        c.publish('msg:{0}'.format(self.msg_id),
+                  json_encode({'type': 'comment',
+                               'data': self.to_dict()}))

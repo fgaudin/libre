@@ -14,6 +14,10 @@ window.App = Ember.Application.create({
                     msg.data.forEach(function(message){
                         store.push('message', message);
                     });
+                } else if (msg.type == 'comment') {
+                    msg.data.forEach(function(comment){
+                        store.push('comment', comment);
+                    });
                 }
             };
             App.ws.onclose = function() {

@@ -5,6 +5,7 @@ import tornadoredis
 import tornado.gen
 from tornado.escape import json_decode
 from message.models import Message
+from comment.models import Comment
 
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
@@ -18,6 +19,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             payload = json_decode(msg.body)
             if payload['type'] == 'message':
                 Message.objects.on_published(self, payload['data'])
+            elif payload['type'] == 'comment':
+                Comment.objects.on_published(self, payload['data'])
 
         if msg.kind == 'disconnect':
             # Do not try to reconnect, just send a message back
@@ -32,6 +35,10 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.client.connect()
         yield tornado.gen.Task(self.client.subscribe, 'main')
         self.client.listen(self.on_published)
+
+    @tornado.gen.engine
+    def listen_to_message(self, msg_id):
+        yield tornado.gen.Task(self.client.subscribe, 'msg:{0}'.format(msg_id))
 
     def get_current_user(self):
         token = self.get_secure_cookie("auth")
