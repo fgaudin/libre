@@ -5,6 +5,7 @@ from message.models import MESSAGES_TO_FRIENDS, MESSAGES_TO_PUBLIC, FRIEND_FEED,
     PUBLIC_FEED, Message
 from websocket.manager import Manager
 from conf import settings
+from notification.models import Notification
 
 TOKEN = 't'
 USER = 'u'
@@ -159,6 +160,10 @@ class User:
         self.send_messages(last_messages)
         self.incr_counter('following')
         user.incr_counter('followers')
+        Notification.objects.create(self.username,
+                                    self.fullname,
+                                    'follow',
+                                    user.uid)
 
     def unfollow(self, user):
         connection = Redis.get_connection()

@@ -6,6 +6,7 @@ import tornado.gen
 from tornado.escape import json_decode
 from message.models import Message
 from comment.models import Comment
+from notification.models import Notification
 
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
@@ -21,6 +22,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                 Message.objects.on_published(self, payload['data'])
             elif payload['type'] == 'comment':
                 Comment.objects.on_published(self, payload['data'])
+            elif payload['type'] == 'notification':
+                Notification.objects.on_published(self, payload['data'])
 
         if msg.kind == 'disconnect':
             # Do not try to reconnect, just send a message back
@@ -56,14 +59,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.manager.register(user.uid, self)
 
     def on_message(self, msg):
-        if msg.kind == 'message':
-            self.write_message(str(msg.body))
-        if msg.kind == 'disconnect':
-            # Do not try to reconnect, just send a message back
-            # to the client and close the client connection
-            self.write_message('The connection terminated '
-                               'due to a Redis server error.')
-            self.close()
+        pass
 
     def on_close(self):
         print("Client closed")
