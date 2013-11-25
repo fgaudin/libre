@@ -151,6 +151,11 @@ App.LibreController = Ember.Controller.extend({
 App.LibreRoute = Ember.Route.extend({
     model: function(){
         return this.store.find('message');
+    },
+    setupController: function(controller, model) {
+        this.controllerFor('notificationIndex').set('model',
+            this.get('store').find('notification')
+        );
     }
 });
 
@@ -402,24 +407,26 @@ App.Notification = DS.Model.extend({
     from_fullname: DS.attr('string'),
     action: DS.attr('string'),
     action_str: DS.attr('string'),
-    new: DS.attr('boolean')
+    new: DS.attr('boolean'),
+
+    numericId: function(){
+        return parseInt(this.get('id'), 10);
+    }.property('id'),
 });
 
 App.NotificationIndexController = Ember.ArrayController.extend({
+    sortProperties: ['numericId'],
+    sortAscending: false,
     shown: false,
-    _count: null,
-    notifications: function(){
-        return this.get('store').find('notification');
-    }.property(),
     count: function(){
-        return this.get('notifications').filterBy('new', true).get('length');
-    }.property('notifications.@each.new'),
+        return this.filterBy('new', true).get('length');
+    }.property('model.@each.new'),
     actions: {
         show: function(){
             var ctrl = this;
             if (this.get('shown')) {
                 setTimeout(function(){
-                    ctrl.get('notifications').forEach(function(notif){
+                    ctrl.get('model').forEach(function(notif){
                         notif.set('new', false);
                     });
                 }, 1000);

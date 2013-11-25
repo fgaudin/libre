@@ -48,10 +48,12 @@ class NotificationManager:
 class Notification:
     objects = NotificationManager()
 
-    def __init__(self, from_username, from_fullname, action, to_uid=None, new=True, *args, **kwargs):
+    def __init__(self, from_username, from_fullname, action, to_uid=None,
+                 new=True, id=None, *args, **kwargs):
         if action not in ACTIONS.keys():
             raise Exception('Action not defined')
 
+        self.id = id
         self.from_username = from_username
         self.from_fullname = from_fullname
         self.action = action
@@ -59,7 +61,8 @@ class Notification:
         self.new = new
 
     def _to_db(self):
-        return {'from_username': self.from_username,
+        return {'id': self.id,
+                'from_username': self.from_username,
                 'from_fullname': self.from_fullname,
                 'action': self.action}
 
@@ -70,12 +73,18 @@ class Notification:
         data['new'] = self.new
         return data
 
-    def save(self):
+    def _nextId(self):
         connection = Redis.get_connection()
-        connection.lpush('{0}:{1}'.format(NEW_NOTIFICATION, self.to_uid),
-                         json_encode(self._to_db()))
+        return connection.incr('notif_id')
 
-        self.publish()
+    def save(self):
+        if not self.id:
+            self.id = self._nextId()
+            connection = Redis.get_connection()
+            connection.lpush('{0}:{1}'.format(NEW_NOTIFICATION, self.to_uid),
+                             json_encode(self._to_db()))
+
+            self.publish()
 
     def publish(self):
         c = TornadoRedis.get_connection()

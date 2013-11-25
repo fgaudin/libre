@@ -9,12 +9,6 @@ class NotificationHandler(BaseHandler):
     def get(self):
         current_user = self.get_current_user()
         notifications = Notification.objects.get(current_user)
+        response = {'notification': [n.to_dict() for n in notifications]}
 
-        result = []
-        for index, n in enumerate(notifications):
-            data = n.to_dict()
-            data['id'] = index
-            result.append(data)
-
-        response = {'notification': result}
         self.write(json_encode(response))

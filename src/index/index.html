@@ -201,7 +201,7 @@
             <button {{!bind-attr class=":pure-button count:pure-button-active"}} {{! action "show"}}>!{{!#if count}} ({{! count}}){{!/if}}</button>
             {{!# if shown}}
             <div class="notifications">
-                {{!#each notifications }}
+                {{!#each }}
                 <div {{!bind-attr class=":notification new"}}">
                     {{!#link-to "user_profile" from_username}}{{! from_fullname}} {{!action_str}}{{!/link-to}}
                 </div>
