@@ -131,6 +131,10 @@ class User:
         connection = Redis.get_connection()
         connection.sadd("%s:%s" % (FRIEND_REQUESTS, self.uid), current_user.uid)
         current_user.follow(self)
+        Notification.objects.create(current_user.username,
+                                    current_user.fullname,
+                                    'request',
+                                    self.uid)
 
     def cancel_request_from(self, current_user):
         connection = Redis.get_connection()
@@ -143,6 +147,10 @@ class User:
         self.cancel_request_from(user)
         self.incr_counter('friends')
         user.incr_counter('friends')
+        Notification.objects.create(self.username,
+                                    self.fullname,
+                                    'accepted',
+                                    user.uid)
 
     def unfriend(self, current_user):
         connection = Redis.get_connection()
