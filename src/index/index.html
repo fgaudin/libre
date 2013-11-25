@@ -196,6 +196,21 @@
            </div>
         </script>
 
+        <script type="text/x-handlebars" data-template-name="notification/index">
+        <div class="notification-container">
+            <button {{!bind-attr class=":pure-button count:pure-button-active"}} {{! action "show"}}>!{{!#if count}} ({{! count}}){{!/if}}</button>
+            {{!# if shown}}
+            <div class="notifications">
+                {{!#each notifications }}
+                <div {{!bind-attr class=":notification new"}}">
+                    {{!#link-to "user_profile" from_username}}{{! from_fullname}} {{!action_str}}{{!/link-to}}
+                </div>
+                {{!/each}}
+            </div>
+            {{!/if}}
+        </div>
+        </script>
+
         <script type="text/x-handlebars" data-template-name="libre">
         <header id="header">
             <div class="pure-g menu">
@@ -204,7 +219,8 @@
                 </div>
                 <div class="pure-u-2-3 login">
                     {{!#if authenticated}}
-                    {{!fullname}} - @{{!username}} <input {{!action 'logout'}} type="submit" value="Logout" class="pure-button">
+                    {{! render "notification/index"}}
+                    {{!fullname}}@{{!username}} <input {{!action 'logout'}} type="submit" value="Logout" class="pure-button">
                     {{!/if}}
                 </div>
             </div>

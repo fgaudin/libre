@@ -8,6 +8,7 @@ from auth.handlers import FacebookGraphLoginHandler, \
 from user.handlers import UserHandler, ProfileHandler
 from conf import settings
 from comment.handlers import CommentHandler
+from notification.handlers import NotificationHandler
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -23,6 +24,7 @@ def main():
             (r"/login/facebook", FacebookGraphLoginHandler),
             (r"/login/google", GoogleLoginHandler),
             (r"/login/twitter", TwitterLoginHandler),
+            (r"/notifications", NotificationHandler),
             (r"/socket", WebSocketHandler),
             (r"/messages", MessageHandler),
             (r"/messages/([0-9]+)", MessageHandler),

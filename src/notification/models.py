@@ -1,8 +1,9 @@
 from data import Redis, TornadoRedis
-from tornado.escape import json_encode
+from tornado.escape import json_encode, json_decode
 from conf import settings
 from websocket.manager import Manager
 
+NEW_NOTIFICATION = 'nn'
 NOTIFICATION = 'n'
 
 ACTIONS = {'follow': 'is following you',
@@ -18,6 +19,24 @@ class NotificationManager:
         notif.save()
         return notif
 
+    def get(self, user):
+        connection = Redis.get_connection()
+        result_new_notif = connection.lrange('{0}:{1}'.format(NEW_NOTIFICATION, user.uid),
+                                             0,
+                                             settings.NOTIFICATION_SIZE)
+        new_notifications = [Notification(**json_decode(n)) for n in result_new_notif]
+        result = connection.lrange('{0}:{1}'.format(NOTIFICATION, user.uid),
+                                   0,
+                                   settings.NOTIFICATION_SIZE)
+        notifications = [Notification(new=False, **json_decode(n)) for n in result]
+        connection.ltrim('{0}:{1}'.format(NEW_NOTIFICATION, user.uid),
+                         1,
+                         0)
+        if result_new_notif:
+            connection.lpush('{0}:{1}'.format(NOTIFICATION, user.uid), *result_new_notif)
+
+        return new_notifications + notifications
+
     def on_published(self, socket, data):
         manager = Manager.get_manager()
         uid = manager.get_user(socket)
@@ -29,7 +48,7 @@ class NotificationManager:
 class Notification:
     objects = NotificationManager()
 
-    def __init__(self, from_username, from_fullname, action, to_uid=None, *args, **kwargs):
+    def __init__(self, from_username, from_fullname, action, to_uid=None, new=True, *args, **kwargs):
         if action not in ACTIONS.keys():
             raise Exception('Action not defined')
 
@@ -37,6 +56,7 @@ class Notification:
         self.from_fullname = from_fullname
         self.action = action
         self.to_uid = to_uid
+        self.new = new
 
     def _to_db(self):
         return {'from_username': self.from_username,
@@ -47,15 +67,13 @@ class Notification:
         data = self._to_db()
         data['to_uid'] = self.to_uid
         data['action_str'] = ACTIONS[self.action]
+        data['new'] = self.new
         return data
 
     def save(self):
         connection = Redis.get_connection()
-        connection.lpush('{0}:{1}'.format(NOTIFICATION, self.to_uid),
+        connection.lpush('{0}:{1}'.format(NEW_NOTIFICATION, self.to_uid),
                          json_encode(self._to_db()))
-        connection.ltrim('{0}:{1}'.format(NOTIFICATION, self.to_uid),
-                         0,
-                         settings.NOTIFICATION_SIZE - 1)
 
         self.publish()
 

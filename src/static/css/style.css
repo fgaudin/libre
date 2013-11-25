@@ -45,6 +45,20 @@ a, a:hover {
 .login {
     text-align:right;
 }
+.notification-container{
+    position: relative;
+    display: inline-block;
+}
+.notifications{
+    position: absolute;
+    width: 300px;
+    text-align: left;
+    top: 35px;
+    background: gray;
+}
+.notification.new {
+    background: red;
+}
 #main {
     padding-top: 45px;
 }
@@ -87,6 +101,9 @@ textarea {
 .pure-button-warning {
     background: rgb(202, 60, 60);
     color: #FFF;
+}
+.pure-button-active {
+    background: red;
 }
 .post {
     text-align: right;

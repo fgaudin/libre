@@ -18,6 +18,10 @@ window.App = Ember.Application.create({
                     msg.data.forEach(function(comment){
                         store.push('comment', comment);
                     });
+                } else if (msg.type == 'notification') {
+                    msg.data.forEach(function(notification){
+                        store.push('notification', notification);
+                    });
                 }
             };
             App.ws.onclose = function() {
@@ -389,6 +393,38 @@ App.MessageController = Ember.ObjectController.extend({
                 var value = !message.get('liked');
                 message.set('liked', value);
             });
+        }
+    }
+});
+
+App.Notification = DS.Model.extend({
+    from_username: DS.attr('string'),
+    from_fullname: DS.attr('string'),
+    action: DS.attr('string'),
+    action_str: DS.attr('string'),
+    new: DS.attr('boolean')
+});
+
+App.NotificationIndexController = Ember.ArrayController.extend({
+    shown: false,
+    _count: null,
+    notifications: function(){
+        return this.get('store').find('notification');
+    }.property(),
+    count: function(){
+        return this.get('notifications').filterBy('new', true).get('length');
+    }.property('notifications.@each.new'),
+    actions: {
+        show: function(){
+            var ctrl = this;
+            if (this.get('shown')) {
+                setTimeout(function(){
+                    ctrl.get('notifications').forEach(function(notif){
+                        notif.set('new', false);
+                    });
+                }, 1000);
+            }
+            this.set('shown', !this.get('shown'));
         }
     }
 });
