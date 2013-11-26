@@ -1,11 +1,13 @@
 window.App = Ember.Application.create({
     LOG_TRANSITIONS: true,
     LOG_TRANSITIONS_INTERNAL: true,
+    _retrySocketIn: 1000,
     openSocket: function(store){
         if ("WebSocket" in window) {
-            console.log("WebSocket is supported by your Browser!");
             App.ws = new WebSocket("ws://" + window.location.host + "/socket");
             App.ws.onopen = function() {
+                App._retrySocketIn = 1000;
+                console.log('connected');
             };
             App.ws.onmessage = function (evt) {
                 console.log('received: ' + evt.data)
@@ -25,7 +27,9 @@ window.App = Ember.Application.create({
                 }
             };
             App.ws.onclose = function() {
-                console.log("Connection closed");
+                console.log("Retrying in: " + App._retrySocketIn);
+                App._retrySocketIn = App._retrySocketIn * 2;
+                setTimeout(App.openSocket, App._retrySocketIn);
             };
         } else {
             console.log("Websocket not supported");
