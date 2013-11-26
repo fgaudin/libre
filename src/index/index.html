@@ -129,6 +129,10 @@
         </div>
         </script>
 
+        <script type="text/x-handlebars" data-template-name="message">
+            {{! message-tpl message=model}}
+        </script>
+
         <script type="text/x-handlebars" data-template-name="components/message-tpl">
             <div class="message">
                 <div class="author-avatar"><img {{! bind-attr src=message.author_pic}} /></div>

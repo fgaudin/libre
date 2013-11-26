@@ -29,7 +29,9 @@ window.App = Ember.Application.create({
             App.ws.onclose = function() {
                 console.log("Retrying in: " + App._retrySocketIn);
                 App._retrySocketIn = App._retrySocketIn * 2;
-                setTimeout(App.openSocket, App._retrySocketIn);
+                setTimeout(function(){
+                    App.openSocket(store);
+                }, App._retrySocketIn);
             };
         } else {
             console.log("Websocket not supported");
