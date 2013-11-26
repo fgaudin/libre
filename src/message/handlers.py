@@ -52,7 +52,7 @@ class MessageHandler(BaseHandler):
         message['likes'] = 0
 
         via_user = None
-        if via:
+        if via and via != user.username:
             # it's a repost
             via_user = User.objects.find(username=via)
             message['via_username'] = via
