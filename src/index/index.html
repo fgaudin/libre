@@ -220,7 +220,7 @@
              valueBinding="searchTerm" action="search" }}
         {{!#if showSearchResults}}
         <div class="search-results">
-            {{!#each users}}
+            {{!#each App.SearchResults }}
             {{!#link-to 'user_profile' username }}
             <div class="search-result">
                 <div class="author-avatar"><img {{! bind-attr src=pic}} /></div>
@@ -228,7 +228,7 @@
                 <div class="author-username">@{{! username}}</div>
             </div>
             {{!/link-to}}
-        {{!/each}}
+            {{!/each}}
         </div>
         {{!/if}}
         </script>

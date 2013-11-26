@@ -25,9 +25,9 @@ window.App = Ember.Application.create({
                         store.push('notification', notification);
                     });
                 } else if (msg.type == 'user') {
-                    store.unloadAll('user');
+                    App.SearchResults.clear();
                     msg.data.forEach(function(user){
-                        store.push('user', user);
+                        App.SearchResults.pushObject(user);
                     });
                 }
             };
@@ -88,6 +88,8 @@ App.User = DS.Model.extend({
         }
     }.property('friend', 'friend_requested', 'friend_waiting')
 });
+
+App.SearchResults = [];
 
 App.Message = DS.Model.extend({
   body: DS.attr('string'),
@@ -151,7 +153,6 @@ App.Search = Ember.TextField.extend({
             App.ws.send(JSON.stringify({'type': 'search', 'term': searchTerm}))
         } else {
             console.log('unloading');
-            this.get('parentView.controller').get('store').unloadAll('user');
             this.get('parentView.controller').set('showSearchResults', false);
         }
     }
