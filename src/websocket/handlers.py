@@ -59,7 +59,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             self.manager.register(user.uid, self)
 
     def on_message(self, msg):
-        pass
+        message = json_decode(msg)
+        if message['type'] == 'search':
+            User.objects.search(self, message['term'])
 
     def on_close(self):
         print("Client closed")

@@ -215,16 +215,39 @@
         </div>
         </script>
 
+        <script type="text/x-handlebars" data-template-name="_search">
+        {{!view App.Search placeholder="Search" size="30"
+             valueBinding="searchTerm" action="search" }}
+        {{!#if showSearchResults}}
+        <div class="search-results">
+            {{!#each users}}
+            {{!#link-to 'user_profile' username }}
+            <div class="search-result">
+                <div class="author-avatar"><img {{! bind-attr src=pic}} /></div>
+                <div class="author-fullname">{{! fullname}}</div>
+                <div class="author-username">@{{! username}}</div>
+            </div>
+            {{!/link-to}}
+        {{!/each}}
+        </div>
+        {{!/if}}
+        </script>
+
         <script type="text/x-handlebars" data-template-name="libre">
         <header id="header">
             <div class="pure-g menu">
-                <div class="pure-u-1-3">
+                <div class="pure-u-1-4">
                     <h1>{{!#link-to 'libre'}}Libre{{!/link-to}}</h1>
                 </div>
-                <div class="pure-u-2-3 login">
+                <div class="pure-u-1-2 pure-form search-form">
+                    {{! partial "search"}}
                     {{!#if authenticated}}
                     {{! render "notification/index"}}
-                    {{!fullname}}@{{!username}} <input {{!action 'logout'}} type="submit" value="Logout" class="pure-button">
+                    {{!/if}}
+                </div>
+                <div class="pure-u-1-4 login">
+                    {{!#if authenticated}}
+                    @{{!username}} <input {{!action 'logout'}} type="submit" value="Logout" class="pure-button">
                     {{!/if}}
                 </div>
             </div>

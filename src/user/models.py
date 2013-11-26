@@ -50,6 +50,14 @@ class UserManager:
 
         return None
 
+    def search(self, socket, term):
+        connection = Redis.get_connection()
+        result = connection.keys('{0}:*{1}*'.format(REVERSE_USER, term))
+        if result:
+            keys = [k.decode() for k in result]
+            users = [User(**json_decode(data.decode())).to_dict() for data in connection.mget(keys)]
+            socket.write_message(json_encode({'type': 'user', 'data': users}))
+
 
 class UserAlreadyExists(Exception):
     pass

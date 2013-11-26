@@ -42,6 +42,21 @@ a, a:hover {
 .menu {
     color: #fff;
 }
+.search-form {
+    position: relative;
+}
+.search-results {
+    position: absolute;
+    width: 300px;
+    background: green;
+}
+.search-result {
+    padding: 5px;
+    clear: both;
+}
+.search-result .author-avatar {
+    margin-right: 5px;
+}
 .login {
     text-align:right;
 }

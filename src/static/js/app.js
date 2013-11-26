@@ -24,6 +24,11 @@ window.App = Ember.Application.create({
                     msg.data.forEach(function(notification){
                         store.push('notification', notification);
                     });
+                } else if (msg.type == 'user') {
+                    store.unloadAll('user');
+                    msg.data.forEach(function(user){
+                        store.push('user', user);
+                    });
                 }
             };
             App.ws.onclose = function() {
@@ -138,8 +143,28 @@ App.Comment = DS.Model.extend({
     msg_id: DS.attr('number')
 });
 
+App.Search = Ember.TextField.extend({
+    keyUp: function(evt) {
+        var searchTerm = this.get('value');
+        if (searchTerm.length >= 3) {
+            this.get('parentView.controller').set('showSearchResults', true);
+            App.ws.send(JSON.stringify({'type': 'search', 'term': searchTerm}))
+        } else {
+            console.log('unloading');
+            this.get('parentView.controller').get('store').unloadAll('user');
+            this.get('parentView.controller').set('showSearchResults', false);
+        }
+    }
+  });
+
 App.LibreController = Ember.Controller.extend({
     authenticated: false,
+    searchTerm: '',
+    users: function(){
+        return this.get('store').filter('user', function(user){
+            return true;
+        });
+    }.property('searchTerm'),
     actions: {
         logout: function(){
             var ctrl = this;
@@ -279,8 +304,12 @@ App.MessageTplComponent = Ember.Component.extend({
 });
 
 App.UserProfileRoute = Ember.Route.extend({
+    beforeModel: function(){
+        console.log('cleaning');
+        this.controllerFor('libre').set('showSearchResults', false);
+        this.controllerFor('libre').set('searchTerm', '');
+    },
     model: function (params) {
-        console.log(params.username);
         this.set('username', params.username);
         return this.get('store').find('message', {username: this.get('username')});
     },
