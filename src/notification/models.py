@@ -30,13 +30,22 @@ class NotificationManager:
                                    0,
                                    settings.NOTIFICATION_SIZE)
         notifications = [Notification(new=False, **json_decode(n)) for n in result]
+
+        return new_notifications + notifications
+
+    def seen(self, user):
+        connection = Redis.get_connection()
+        result_new_notif = connection.lrange('{0}:{1}'.format(NEW_NOTIFICATION,
+                                                              user.uid),
+                                             0,
+                                             settings.NOTIFICATION_SIZE)
         connection.ltrim('{0}:{1}'.format(NEW_NOTIFICATION, user.uid),
                          1,
                          0)
-        if result_new_notif:
-            connection.lpush('{0}:{1}'.format(NOTIFICATION, user.uid), *result_new_notif)
 
-        return new_notifications + notifications
+        if result_new_notif:
+            connection.lpush('{0}:{1}'.format(NOTIFICATION, user.uid),
+                             *result_new_notif)
 
     def on_published(self, socket, data):
         manager = Manager.get_manager()

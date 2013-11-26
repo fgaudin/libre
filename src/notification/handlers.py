@@ -12,3 +12,9 @@ class NotificationHandler(BaseHandler):
         response = {'notification': [n.to_dict() for n in notifications]}
 
         self.write(json_encode(response))
+
+    @authenticated
+    def post(self):
+        current_user = self.get_current_user()
+        Notification.objects.seen(current_user)
+        self.write('ok')

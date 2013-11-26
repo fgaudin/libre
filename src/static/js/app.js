@@ -435,11 +435,13 @@ App.NotificationIndexController = Ember.ArrayController.extend({
         show: function(){
             var ctrl = this;
             if (this.get('shown')) {
-                setTimeout(function(){
-                    ctrl.get('model').forEach(function(notif){
-                        notif.set('new', false);
-                    });
-                }, 1000);
+                App.$.post('/notifications', function(response){
+                    if (response) {
+                        ctrl.get('model').forEach(function(notif){
+                            notif.set('new', false);
+                        });
+                    }
+                });
             }
             this.set('shown', !this.get('shown'));
         }
