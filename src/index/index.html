@@ -203,7 +203,7 @@
             <div class="notifications">
                 {{!#each }}
                 <div {{!bind-attr class=":notification new"}}">
-                    {{!#link-to "user_profile" from_username}}{{! from_fullname}} {{!action_str}}{{!/link-to}}
+                    {{!#link-to target_url link_param}}{{! from_fullname}} {{!action_str}}{{!/link-to}}
                 </div>
                 {{!/each}}
             </div>

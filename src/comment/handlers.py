@@ -3,6 +3,8 @@ from comment.models import Comment
 from tornado.escape import json_encode
 from websocket.manager import Manager
 from tornado.web import authenticated
+from notification.models import Notification
+from message.models import Message
 
 
 class CommentHandler(BaseHandler):
@@ -32,5 +34,10 @@ class CommentHandler(BaseHandler):
                           message_id)
         comment.save()
         comment.publish()
+        message = Message.objects.get(message_id)
+        Notification.objects.create(user.fullname,
+                                    'commented',
+                                    message_id,
+                                    message.author_uid)
 
         self.write(json_encode({'commented': True}))

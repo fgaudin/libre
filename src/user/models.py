@@ -131,9 +131,9 @@ class User:
         connection = Redis.get_connection()
         connection.sadd("%s:%s" % (FRIEND_REQUESTS, self.uid), current_user.uid)
         current_user.follow(self)
-        Notification.objects.create(current_user.username,
-                                    current_user.fullname,
+        Notification.objects.create(current_user.fullname,
                                     'request',
+                                    current_user.username,
                                     self.uid)
 
     def cancel_request_from(self, current_user):
@@ -147,9 +147,9 @@ class User:
         self.cancel_request_from(user)
         self.incr_counter('friends')
         user.incr_counter('friends')
-        Notification.objects.create(self.username,
-                                    self.fullname,
+        Notification.objects.create(self.fullname,
                                     'accepted',
+                                    self.username,
                                     user.uid)
 
     def unfriend(self, current_user):
@@ -168,9 +168,9 @@ class User:
         self.send_messages(last_messages)
         self.incr_counter('following')
         user.incr_counter('followers')
-        Notification.objects.create(self.username,
-                                    self.fullname,
+        Notification.objects.create(self.fullname,
                                     'follow',
+                                    self.username,
                                     user.uid)
 
     def unfollow(self, user):
@@ -240,8 +240,12 @@ class User:
     def like(self, msg_id):
         connection = Redis.get_connection()
         connection.sadd('{0}:{1}'.format(LIKES, self.uid), msg_id)
-        message = Message(id=msg_id)
+        message = Message.objects.get(msg_id)
         message.incr_like()
+        Notification.objects.create(self.fullname,
+                                    'liked',
+                                    msg_id,
+                                    message.author_uid)
 
     def unlike(self, msg_id):
         connection = Redis.get_connection()

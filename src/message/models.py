@@ -18,7 +18,7 @@ class MessageManager:
         connection = Redis.get_connection()
         msg = connection.get('{0}:{1}'.format(MESSAGE, id))
         if msg:
-            return Message(id=id, ** json_decode(msg))
+            return Message(**json_decode(msg))
         return None
 
     def mget(self, *args):

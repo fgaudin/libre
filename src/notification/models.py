@@ -10,12 +10,13 @@ ACTIONS = {'follow': 'is following you',
            'request': 'has sent you a friend request',
            'accepted': 'has accepted your friend request',
            'liked': 'has liked your post',
-           'commented': 'has commented your post'}
+           'commented': 'has commented your post',
+           'reposted': 'has reposted your post'}
 
 
 class NotificationManager:
-    def create(self, from_username, from_fullname, action, to_uid):
-        notif = Notification(from_username, from_fullname, action, to_uid)
+    def create(self, from_fullname, action, link_param, to_uid):
+        notif = Notification(from_fullname, action, link_param, to_uid)
         notif.save()
         return notif
 
@@ -48,23 +49,23 @@ class NotificationManager:
 class Notification:
     objects = NotificationManager()
 
-    def __init__(self, from_username, from_fullname, action, to_uid=None,
+    def __init__(self, from_fullname, action, link_param=None, to_uid=None,
                  new=True, id=None, *args, **kwargs):
         if action not in ACTIONS.keys():
             raise Exception('Action not defined')
 
         self.id = id
-        self.from_username = from_username
         self.from_fullname = from_fullname
         self.action = action
         self.to_uid = to_uid
+        self.link_param = link_param
         self.new = new
 
     def _to_db(self):
         return {'id': self.id,
-                'from_username': self.from_username,
                 'from_fullname': self.from_fullname,
-                'action': self.action}
+                'action': self.action,
+                'link_param': self.link_param}
 
     def to_dict(self):
         data = self._to_db()

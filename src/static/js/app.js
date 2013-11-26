@@ -403,15 +403,25 @@ App.MessageController = Ember.ObjectController.extend({
 });
 
 App.Notification = DS.Model.extend({
-    from_username: DS.attr('string'),
     from_fullname: DS.attr('string'),
     action: DS.attr('string'),
     action_str: DS.attr('string'),
+    link_param: DS.attr('string'),
     new: DS.attr('boolean'),
 
     numericId: function(){
         return parseInt(this.get('id'), 10);
     }.property('id'),
+    target_url: function(){
+        var action = this.get('action');
+        if ($.inArray(action, ['request', 'accepted', 'follow'])) {
+            return 'user_profile';
+        } else if ($.inArray(action, ['liked', 'commented', 'reposted'])) {
+            return 'message';
+        } else {
+            return ''
+        }
+    }.property('action')
 });
 
 App.NotificationIndexController = Ember.ArrayController.extend({

@@ -6,6 +6,7 @@ from user.models import User
 from tornado import gen
 from tornado.httpclient import AsyncHTTPClient
 from bs4 import BeautifulSoup
+from notification.models import Notification
 
 
 class MessageHandler(BaseHandler):
@@ -49,9 +50,13 @@ class MessageHandler(BaseHandler):
         message['author_username'] = user.username
         message['author_pic'] = user.pic
         message['likes'] = 0
+
+        via_user = None
         if via:
+            # it's a repost
+            via_user = User.objects.find(username=via)
             message['via_username'] = via
-            message['via_fullname'] = User.objects.find(username=via).fullname
+            message['via_fullname'] = via_user.fullname
 
         msg_obj = Message(**message)
 
@@ -80,6 +85,11 @@ class MessageHandler(BaseHandler):
         msg_obj.save()
         user.incr_counter('messages')
         user.push_message(msg_obj)
+        if via_user:
+            Notification.objects.create(user.fullname,
+                                        'reposted',
+                                        msg_obj.id,
+                                        via_user.uid)
 
         self.write(json_encode(msg_obj.to_dict()))
 
