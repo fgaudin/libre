@@ -185,3 +185,7 @@ textarea {
 .username {
     font-size: 0.7em;
 }
+
+.user {
+    clear: both;
+}

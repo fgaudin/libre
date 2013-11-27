@@ -7,7 +7,18 @@ from tornado.web import authenticated
 class ProfileHandler(BaseHandler):
     @authenticated
     def get(self):
-        self.render("index.html", user=self.get_current_user())
+        user = self.get_current_user()
+        friend_ids = user.get_friends()
+        friends = User.objects.mget(*friend_ids)
+        follower_ids = user.get_followers()
+        followers = User.objects.mget(*follower_ids)
+        followee_ids = user.get_followees()
+        followees = User.objects.mget(*followee_ids)
+        self.render("index.html",
+                    user=user,
+                    friends=friends,
+                    followers=followers,
+                    followees=followees)
 
     @authenticated
     def post(self):

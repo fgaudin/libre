@@ -13,6 +13,7 @@ REVERSE_USER = 'ru'
 FRIENDS = 'f'
 FRIEND_REQUESTS = 'fr'
 FOLLOWERS = 'fw'
+FOLLOWEES = 'fe'
 LIKES = 'l'
 USER_COUNTERS = 'uc'
 
@@ -49,6 +50,15 @@ class UserManager:
             return User(**json_decode(user))
 
         return None
+
+    def mget(self, *user_ids):
+        connection = Redis.get_connection()
+        keys = ["{0}:{1}".format(USER, u) for u in user_ids]
+        if len(keys):
+            users = [User(**json_decode(data.decode())).to_dict() for data in connection.mget(keys)]
+        else:
+            users = []
+        return users
 
     def search(self, socket, term):
         connection = Redis.get_connection()
@@ -170,6 +180,7 @@ class User:
     def follow(self, user):
         connection = Redis.get_connection()
         connection.sadd("%s:%s" % (FOLLOWERS, user.uid), self.uid)
+        connection.sadd("%s:%s" % (FOLLOWEES, self.uid), user.uid)
         last_messages = Message.objects.get_messages_to_public(self, user)
         for msg in last_messages:
             connection.lpush('%s:%s' % (PUBLIC_FEED, self.uid), msg.id)
@@ -184,6 +195,7 @@ class User:
     def unfollow(self, user):
         connection = Redis.get_connection()
         connection.srem("%s:%s" % (FOLLOWERS, user.uid), self.uid)
+        connection.srem("%s:%s" % (FOLLOWEES, self.uid), user.uid)
         self.decr_counter('following')
         user.decr_counter('followers')
 
@@ -197,6 +209,10 @@ class User:
     def get_followers(self):
         connection = Redis.get_connection()
         return [follower.decode() for follower in connection.smembers("%s:%s" % (FOLLOWERS, self.uid))]
+
+    def get_followees(self):
+        connection = Redis.get_connection()
+        return [followee.decode() for followee in connection.smembers("%s:%s" % (FOLLOWEES, self.uid))]
 
     def get_counters(self):
         if not self._counters:

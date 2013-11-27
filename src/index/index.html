@@ -247,7 +247,7 @@
                 </div>
                 <div class="pure-u-1-4 login">
                     {{!#if authenticated}}
-                    @{{!username}} <input {{!action 'logout'}} type="submit" value="Logout" class="pure-button">
+                    <a href="/profile">@{{!username}}</a> <input {{!action 'logout'}} type="submit" value="Logout" class="pure-button">
                     {{!/if}}
                 </div>
             </div>

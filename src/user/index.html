@@ -32,6 +32,44 @@
                     <input type="submit" value="Save" />
                 </form>
             </div>
+            <div class="pure-g-r profile">
+                <div class="pure-u-1-3">
+                    <h2>Friends</h2>
+                    {% for friend in friends %}
+                    <a href="/#/user/{{friend['username']}}">
+                        <div class="user">
+                            <div class="author-avatar"><img src="{{ friend['pic'] }}" /></div>
+                            <div>{{ friend['fullname'] }}</div>
+                            <div>@{{ friend['username'] }}</div>
+                        </div>
+                    </a>
+                    {% end %}
+                </div>
+                <div class="pure-u-1-3">
+                    <h2>Followers</h2>
+                    {% for follower in followers %}
+                    <a href="/#/user/{{ follower['username'] }}">
+                        <div class="user">
+                            <div class="author-avatar"><img src="{{ follower['pic'] }}" /></div>
+                            <div>{{ follower['fullname'] }}</div>
+                            <div>@{{ follower['username'] }}</div>
+                        </div>
+                    </a>
+                    {% end %}
+                </div>
+                <div class="pure-u-1-3">
+                    <h2>Following</h2>
+                    {% for followee in followees %}
+                    <a href="/#/user/{{ followee['username']}}">
+                        <div class="user">
+                            <div class="author-avatar"><img src="{{ followee['pic'] }}" /></div>
+                            <div>{{ followee['fullname'] }}</div>
+                            <div>@{{ followee['username'] }}</div>
+                        </div>
+                    </a>
+                    {% end %}
+                </div>
+            </div>
         </section>
     </body>
 </html>
