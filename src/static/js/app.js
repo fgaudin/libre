@@ -52,13 +52,8 @@ App.Router.map(function () {
               this.resource("user_public", { path: "public" })
           });
       });
-      this.resource("friends", { path: "friends" }, function(){
-          this.route('create',  { path: 'new' });
-      });
-      this.resource("public", { path: "public" }, function(){
-          this.route('create',  { path: 'new' });
-      });
       this.resource("message", { path: "/message/:message_id" });
+      this.route("create", {path: "create/:url"})
   });
 });
 
@@ -192,6 +187,10 @@ App.LibreRoute = Ember.Route.extend({
 });
 
 App.LibreIndexRoute = Ember.Route.extend({
+    beforeModel: function(){
+        this.controllerFor('friendCreate').set('newMessage', '');
+        this.controllerFor('publicCreate').set('newMessage', '');
+    },
     model: function(){
         return this.modelFor('libre');
     }
@@ -392,6 +391,14 @@ App.UserProfileIndexController = Ember.ArrayController.extend({
                 }
             }, 'json');
         }
+    }
+});
+
+App.LibreCreateRoute = Ember.Route.extend({
+    beforeModel: function(transition){
+        var url = transition.params.url;
+        this.controllerFor('friendCreate').set('newMessage', decodeURIComponent(url));
+        this.controllerFor('publicCreate').set('newMessage', decodeURIComponent(url));
     }
 });
 

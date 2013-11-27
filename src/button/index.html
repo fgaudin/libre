@@ -1,0 +1,18 @@
+<html>
+    <head></head>
+    <body>
+        <div class="libre-share"></div>
+        <div>&nbsp;</div>
+        <div class="libre-share" data-url="http://francoisgaudin.com"></div>
+        <script type="text/javascript">
+            var el = document.getElementsByClassName('libre-share');
+            for(var i=0; i<el.length; i+=1){
+                el[i].innerHTML = 'Share';
+                el[i].style.cssText = "width:100px;height:16px; background:green; text-align:center;color:white;font-family:sans-serif;padding: 8px;border-radius: 5px;";
+                el[i].onclick = function(e){
+                    window.open('http://test.libre.org:8888/#/create/' + encodeURIComponent((e.target.dataset.url || document.location.href)), "_blank", "height=400,width=600");
+                }
+            }
+        </script>
+    </body>
+</html>

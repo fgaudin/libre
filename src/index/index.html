@@ -12,7 +12,7 @@
                 {{!textarea id="new-friend-message" placeholder="Post to your friends"
                     value=newMessage action="create"}}
                 <div class="post">
-                    <input {{!action 'create'}} type="submit" value="Post" class="pure-button pure-button-primary">
+                    <input {{!action 'create'}} type="submit" value="Post to your friends" class="pure-button pure-button-primary">
                 </div>
             </form>
         </div>
@@ -24,9 +24,32 @@
                 {{!textarea id="new-public-message" placeholder="Post to everyone"
                     value=newMessage action="create"}}
                 <div class="post">
-                    <input {{!action 'create'}} type="submit" value="Post" class="pure-button pure-button-primary">
+                    <input {{!action 'create'}} type="submit" value="Post to public" class="pure-button pure-button-primary">
                 </div>
             </form>
+        </div>
+        </script>
+
+        <script type="text/x-handlebars" data-template-name="libre/create">
+        <div class="pure-g-r feeds">
+            <div class="pure-u-1-2">
+                <div class="feed friend-feed">
+                    <div class="messages">
+                        <div class="message-to-friend">
+                            {{! render "friend/create"}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pure-u-1-2">
+                <div class="feed public-feed">
+                    <div class="messages">
+                        <div class="message-to-friend">
+                            {{! render "public/create"}}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         </script>
 

@@ -9,6 +9,7 @@ from user.handlers import UserHandler, ProfileHandler
 from conf import settings
 from comment.handlers import CommentHandler
 from notification.handlers import NotificationHandler
+from button.handlers import ButtonHandler
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -31,6 +32,7 @@ def main():
             (r"/like", LikeHandler),
             (r"/comments", CommentHandler),
             (r"/users/([a-zA-Z0-9_]+)", UserHandler),
+            (r"/button", ButtonHandler),
             ],
             debug=True,
             static_path='static/',
