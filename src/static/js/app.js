@@ -151,7 +151,7 @@ App.Search = Ember.TextField.extend({
             this.get('parentView.controller').set('showSearchResults', false);
         }
     }
-  });
+});
 
 App.LibreController = Ember.Controller.extend({
     authenticated: false,
@@ -457,9 +457,10 @@ App.Notification = DS.Model.extend({
     }.property('id'),
     target_url: function(){
         var action = this.get('action');
-        if ($.inArray(action, ['request', 'accepted', 'follow'])) {
+        console.log(action);
+        if ($.inArray(action, ['request', 'accepted', 'follow']) != -1) {
             return 'user_profile';
-        } else if ($.inArray(action, ['liked', 'commented', 'reposted'])) {
+        } else if ($.inArray(action, ['liked', 'commented', 'reposted', 'mentioned']) != -1) {
             return 'message';
         } else {
             return ''

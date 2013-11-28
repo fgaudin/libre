@@ -11,7 +11,8 @@ ACTIONS = {'follow': 'is following you',
            'accepted': 'has accepted your friend request',
            'liked': 'has liked your post',
            'commented': 'has commented your post',
-           'reposted': 'has reposted your post'}
+           'reposted': 'has reposted your post',
+           'mentioned': 'has mentioned you in a post'}
 
 
 class NotificationManager:

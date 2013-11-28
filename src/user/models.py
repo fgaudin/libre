@@ -1,11 +1,12 @@
 from data import Redis, TornadoRedis
-from tornado.escape import json_encode, json_decode
+from tornado.escape import json_encode, json_decode, to_unicode
 import hashlib
 from message.models import MESSAGES_TO_FRIENDS, MESSAGES_TO_PUBLIC, FRIEND_FEED, \
     PUBLIC_FEED, Message
 from websocket.manager import Manager
 from conf import settings
 from notification.models import Notification
+import re
 
 TOKEN = 't'
 USER = 'u'
@@ -16,6 +17,8 @@ FOLLOWERS = 'fw'
 FOLLOWEES = 'fe'
 LIKES = 'l'
 USER_COUNTERS = 'uc'
+
+_MENTION_RE = re.compile(to_unicode(r"""@([a-zA-Z0-9_]+)"""))
 
 
 class UserManager:
@@ -67,6 +70,17 @@ class UserManager:
             keys = [k.decode() for k in result]
             users = [User(**json_decode(data.decode())).to_dict() for data in connection.mget(keys)]
             socket.write_message(json_encode({'type': 'user', 'data': users}))
+
+    def replace_mention(self, text):
+        users = []
+        mentions = _MENTION_RE.findall(text)
+        for mention in mentions:
+            user = self.find(username=mention)
+            if user:
+                users.append(user)
+                text = text.replace('@{0}'.format(mention),
+                                    '<a href="/#/user/{0}">@{0}</a>'.format(mention))
+        return text, users
 
 
 class UserAlreadyExists(Exception):

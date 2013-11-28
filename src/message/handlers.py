@@ -45,6 +45,7 @@ class MessageHandler(BaseHandler):
         message = {}
         message['scope'] = self.get_argument('scope')
         message['body'] = linkify(body, extra_params='target="_blank"')
+        message['body'], mentions = User.objects.replace_mention(message['body'])
         message['author_uid'] = user.uid
         message['author_fullname'] = user.fullname
         message['author_username'] = user.username
@@ -90,6 +91,11 @@ class MessageHandler(BaseHandler):
                                         'reposted',
                                         msg_obj.id,
                                         via_user.uid)
+        for u in mentions:
+            Notification.objects.create(user.fullname,
+                                        'mentioned',
+                                        msg_obj.id,
+                                        u.uid)
 
         self.write(json_encode(msg_obj.to_dict()))
 
