@@ -434,6 +434,12 @@ App.PublicCreateController = Ember.Controller.extend({
     }
 });
 
+App.MessageRoute = Ember.Route.extend({
+     model: function(params){
+         return this.get('store').find('message', params.message_id)
+     }
+});
+
 App.MessageController = Ember.ObjectController.extend({
     actions: {
         toggleLike: function(message_id){

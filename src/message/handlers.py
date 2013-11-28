@@ -15,7 +15,6 @@ class MessageHandler(BaseHandler):
         if message_id:
             message = Message.objects.get(message_id)
             response = {'message': message.to_dict()}
-            self.write(json_encode(response))
         else:
             messages = []
             username = self.get_argument('username', None)
