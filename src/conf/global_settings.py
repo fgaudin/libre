@@ -1,5 +1,7 @@
 HOST = ''  # e.g. mydomain.com
 
+SECRET_KEY = '1234'
+
 MESSAGE_DURATION = 86400
 FEED_SIZE = 100
 NOTIFICATION_SIZE = 10

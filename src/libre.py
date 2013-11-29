@@ -36,7 +36,7 @@ def main():
             ],
             debug=True,
             static_path='static/',
-            cookie_secret='jksjdflksjdfljsdf',
+            cookie_secret=settings.SECRET_KEY,
             twitter_consumer_key=settings.TWITTER_CONSUMER_KEY,
             twitter_consumer_secret=settings.TWITTER_CONSUMER_SECRET
         )
