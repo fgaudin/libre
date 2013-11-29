@@ -5,7 +5,8 @@ import tornado.web
 import tornado.auth
 from tornado.web import authenticated
 from web import BaseHandler
-from auth import store_credentials, generate_token, get_identity, email_exists
+from auth import store_credentials, generate_token, get_identity, email_exists, \
+    unsalted_hash
 from data import Redis
 
 
@@ -50,7 +51,8 @@ class SocialLoginHandler(tornado.web.RequestHandler):
     def authenticate(self, prefix, social_id, username, fullname, pic):
         connection = Redis.get_connection()
         new_user = False
-        uid = connection.get('{0}:{1}'.format(prefix, social_id))
+        key = '{0}:{1}'.format(prefix, unsalted_hash(social_id))
+        uid = connection.get(key)
         if uid:
             user = User.objects.find(uid=uid.decode())
         else:
@@ -59,7 +61,7 @@ class SocialLoginHandler(tornado.web.RequestHandler):
                 username,
                 fullname,
                 pic)
-            connection.set('{0}:{1}'.format(prefix, social_id), user.uid)
+            connection.set(key, user.uid)
 
         token = generate_token()
         user.authenticate(token)

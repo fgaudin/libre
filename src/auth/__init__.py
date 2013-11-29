@@ -10,6 +10,11 @@ def generate_token():
     return hashlib.sha224(token.encode('utf-8')).hexdigest()
 
 
+def unsalted_hash(phrase):
+    result = '{0}'.format(hashlib.sha224(phrase.encode('utf-8')).hexdigest())
+    return result
+
+
 def salted_hash(phrase, salt=None):
     if not salt:
         salt = ''.join(random.choice(string.ascii_letters) for i in range(5))
