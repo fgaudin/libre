@@ -29,3 +29,10 @@ class TornadoRedis:
             cls.connection.connect()
 
         return cls.connection
+
+IDS = 'id'
+
+
+def next_id(key):
+    connection = Redis.get_connection()
+    return connection.hincrby(IDS, key)

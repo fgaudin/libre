@@ -1,4 +1,4 @@
-from data import Redis, TornadoRedis
+from data import Redis, TornadoRedis, next_id
 from tornado.escape import json_encode, json_decode
 from websocket.manager import Manager
 
@@ -29,12 +29,8 @@ class Comment:
         self.msg_id = msg_id
         self.id = id
 
-    def _nextId(self):
-        connection = Redis.get_connection()
-        return connection.incr('c_id')
-
     def _to_db(self):
-        return {'id': self.id  or self._nextId(),
+        return {'id': self.id  or next_id('comment'),
                 'author_id': self.author_id,
                 'author_username': self.author_username,
                 'author_fullname': self.author_fullname,

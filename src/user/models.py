@@ -1,4 +1,4 @@
-from data import Redis, TornadoRedis
+from data import Redis, TornadoRedis, next_id
 from tornado.escape import json_encode, json_decode, to_unicode
 import hashlib
 from message.models import MESSAGES_TO_FRIENDS, MESSAGES_TO_PUBLIC, FRIEND_FEED, \
@@ -22,12 +22,8 @@ _MENTION_RE = re.compile(to_unicode(r"""@([a-zA-Z0-9_]+)"""))
 
 
 class UserManager:
-    def _nextId(self):
-        connection = Redis.get_connection()
-        return connection.incr('user_id')
-
     def create_user(self, username, fullname, pic=''):
-        user = User(self._nextId(),
+        user = User(next_id('user'),
                     username,
                     fullname,
                     pic=pic)

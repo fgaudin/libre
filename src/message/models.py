@@ -1,5 +1,5 @@
 from tornado.escape import json_encode, json_decode
-from data import Redis
+from data import Redis, next_id
 from websocket.manager import Manager
 import datetime
 from conf import settings
@@ -191,13 +191,9 @@ class Message:
                 'via_fullname': self.via_fullname,
                 }
 
-    def _nextId(self):
-        connection = Redis.get_connection()
-        return connection.incr('msg_id')
-
     def save(self):
         if not self.id:
-            self.id = self._nextId()
+            self.id = next_id('message')
             connection = Redis.get_connection()
             connection.setex('{0}:{1}'.format(MESSAGE, self.id),
                              settings.MESSAGE_DURATION,

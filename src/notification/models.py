@@ -1,4 +1,4 @@
-from data import Redis, TornadoRedis
+from data import Redis, TornadoRedis, next_id
 from tornado.escape import json_encode, json_decode
 from conf import settings
 from websocket.manager import Manager
@@ -84,13 +84,9 @@ class Notification:
         data['new'] = self.new
         return data
 
-    def _nextId(self):
-        connection = Redis.get_connection()
-        return connection.incr('notif_id')
-
     def save(self):
         if not self.id:
-            self.id = self._nextId()
+            self.id = next_id('notification')
             connection = Redis.get_connection()
             connection.lpush('{0}:{1}'.format(NEW_NOTIFICATION, self.to_uid),
                              json_encode(self._to_db()))
