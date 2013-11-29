@@ -20,7 +20,5 @@ strictly necessary to make it work. You cannot be forced to provide data you don
 How do we protect your privacy:
 
 - everything you post expires after a few days, giving you the right to sink into oblivion
-- if you sign up with Facebook, Google or Twitter, we only store a hash of your ID. This means
-we can't access to your social account nor find your social account from the data we store.
-- no resources are loaded from third party servers, preventing you from being tracked.
-This includes no ads nor 3rd party analitycs service.
+- if you sign up with Facebook, Google or Twitter, we only store a hash of your ID. This means we can't access to your social account nor find your social account from the data we store.
+- no resources are loaded from third party servers, preventing you from being tracked. This includes no ads nor 3rd party analitycs service.

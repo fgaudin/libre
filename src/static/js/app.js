@@ -29,6 +29,8 @@ window.App = Ember.Application.create({
                     msg.data.forEach(function(user){
                         App.SearchResults.pushObject(user);
                     });
+                } else if (msg.type == 'mentions') {
+                    App.completeResponse(msg.data);
                 }
             };
             App.ws.onclose = function() {
@@ -43,6 +45,53 @@ window.App = Ember.Application.create({
         }
     }
 });
+
+App.completeResponse = null;
+
+var initMentionComplete = function(){
+    function split(val) {
+        return val.split(/@\s*/);
+    }
+
+    function extractLast(term) {
+        return split(term).pop();
+    }
+
+    $(".mention-complete")
+    // don't navigate away from the field on tab when selecting an item
+    .bind("keydown", function(event) {
+        if (event.keyCode === $.ui.keyCode.TAB && $(this).data("autocomplete").menu.active) {
+            event.preventDefault();
+        }
+    }).autocomplete({
+        minLength: 2,
+        delay: 200,
+        source: function(request, response) {
+            if (request.term.indexOf("@") >= 0) {
+                App.ws.send(JSON.stringify({type: 'complete',
+                                            term: extractLast(request.term)}));
+                App.completeResponse = response;
+            }
+        },
+        focus: function() {
+            // prevent value inserted on focus
+            return false;
+        },
+        select: function(event, ui) {
+            var terms = split(this.value);
+            // remove the current input
+            terms.pop();
+            // add the selected item
+            ui.item.value = "@" + ui.item.value;
+            terms.push(ui.item.value);
+            // add placeholder to get the comma-and-space at the end
+            terms.push("");
+            this.value = terms.join("");
+            return false;
+        }
+    }).data("autocomplete");
+};
+
 
 App.Router.map(function () {
   this.resource('libre', { path: '/' }, function(){
@@ -195,6 +244,12 @@ App.LibreIndexRoute = Ember.Route.extend({
         return this.modelFor('libre');
     }
 });
+
+App.LibreIndexView = Ember.View.extend({
+    didInsertElement: function() {
+      initMentionComplete();
+    }
+  });
 
 App.LibreIndexController = Ember.ArrayController.extend({
     needs: "libre",

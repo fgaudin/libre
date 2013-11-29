@@ -63,13 +63,14 @@ class UserManager:
             users = []
         return users
 
-    def search(self, socket, term):
+    def search(self, term):
         connection = Redis.get_connection()
         result = connection.keys('{0}:*{1}*'.format(REVERSE_USER, term))
+        users = []
         if result:
             keys = [k.decode() for k in result]
             users = [User(**json_decode(data.decode())).to_dict() for data in connection.mget(keys)]
-            socket.write_message(json_encode({'type': 'user', 'data': users}))
+        return users
 
     def replace_mention(self, text):
         users = []

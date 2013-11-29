@@ -189,3 +189,5 @@ textarea {
 .user {
     clear: both;
 }
+
+.ui-helper-hidden-accessible { display:none; }

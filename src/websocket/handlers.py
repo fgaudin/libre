@@ -3,7 +3,7 @@ from websocket.manager import Manager
 from user.models import User
 import tornadoredis
 import tornado.gen
-from tornado.escape import json_decode
+from tornado.escape import json_decode, json_encode
 from message.models import Message
 from comment.models import Comment
 from notification.models import Notification
@@ -61,7 +61,14 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def on_message(self, msg):
         message = json_decode(msg)
         if message['type'] == 'search':
-            User.objects.search(self, message['term'])
+            users = User.objects.search(message['term'])
+            self.write_message(json_encode({'type': 'user', 'data': users}))
+        elif message['type'] == 'complete':
+            users = [{'label': '{0} @{1}'.format(u['fullname'],
+                                                 u['username']),
+                      'value': u['username']} for u in User.objects.search(message['term'])]
+            self.write_message(json_encode({'type': 'mentions',
+                                            'data': users}))
 
     def on_close(self):
         print("Client closed")

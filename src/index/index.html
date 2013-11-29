@@ -10,7 +10,7 @@
         <div class="new-message">
             <form class="pure-form">
                 {{!textarea id="new-friend-message" placeholder="Post to your friends"
-                    value=newMessage action="create"}}
+                    value=newMessage class="mention-complete"}}
                 <div class="post">
                     <input {{!action 'create'}} type="submit" value="Post to your friends" class="pure-button pure-button-primary">
                 </div>
@@ -22,7 +22,7 @@
         <div class="new-message">
             <form class="pure-form">
                 {{!textarea id="new-public-message" placeholder="Post to everyone"
-                    value=newMessage action="create"}}
+                    value=newMessage class="mention-complete"}}
                 <div class="post">
                     <input {{!action 'create'}} type="submit" value="Post to public" class="pure-button pure-button-primary">
                 </div>
@@ -281,6 +281,7 @@
         </script>
 
         <script src="/static/js/jquery-1.10.2.min.js" type="text/javascript"></script>
+        <script src="/static/js/jquery-ui-1.10.3.custom.min.js" type="text/javascript"></script>
         <script src="/static/js/handlebars-1.0.0.js" type="text/javascript"></script>
         <script src="/static/js/ember.js" type="text/javascript"></script>
         <script src="/static/js/ember-data.js" type="text/javascript"></script>
