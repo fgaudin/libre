@@ -178,8 +178,6 @@ class User:
         connection.sadd("%s:%s" % (FRIENDS, self.uid), user.uid)
         connection.sadd("%s:%s" % (FRIENDS, user.uid), self.uid)
         self.cancel_request_from(user)
-        self.incr_counter('friends')
-        user.incr_counter('friends')
         Notification.objects.create(self.fullname,
                                     'accepted',
                                     self.username,
@@ -189,8 +187,6 @@ class User:
         connection = Redis.get_connection()
         connection.srem("%s:%s" % (FRIENDS, self.uid), current_user.uid)
         connection.srem("%s:%s" % (FRIENDS, current_user.uid), self.uid)
-        self.decr_counter('friends')
-        current_user.decr_counter('friends')
 
     def follow(self, user):
         connection = Redis.get_connection()
@@ -200,8 +196,6 @@ class User:
         for msg in last_messages:
             connection.lpush('%s:%s' % (PUBLIC_FEED, self.uid), msg.id)
         self.send_messages(last_messages)
-        self.incr_counter('following')
-        user.incr_counter('followers')
         Notification.objects.create(self.fullname,
                                     'follow',
                                     self.username,
@@ -211,8 +205,6 @@ class User:
         connection = Redis.get_connection()
         connection.srem("%s:%s" % (FOLLOWERS, user.uid), self.uid)
         connection.srem("%s:%s" % (FOLLOWEES, self.uid), user.uid)
-        self.decr_counter('following')
-        user.decr_counter('followers')
 
     def is_followed_by(self, current_user):
         if self.uid == current_user.uid:
@@ -245,13 +237,16 @@ class User:
         return self._counters[counter]
 
     def get_friend_count(self):
-        return self._get_counter('friends')
+        connection = Redis.get_connection()
+        return connection.scard('{0}:{1}'.format(FRIENDS, self.uid))
 
     def get_follower_count(self):
-        return self._get_counter('followers')
+        connection = Redis.get_connection()
+        return connection.scard('{0}:{1}'.format(FOLLOWERS, self.uid))
 
     def get_following_count(self):
-        return self._get_counter('following')
+        connection = Redis.get_connection()
+        return connection.scard('{0}:{1}'.format(FOLLOWEES, self.uid))
 
     def get_message_count(self):
         return self._get_counter('messages')
