@@ -3,6 +3,7 @@ import unittest
 
 TEST_MODULES = [
     'tests.data',
+    'tests.user',
 ]
 
 

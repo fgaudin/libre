@@ -7,6 +7,7 @@ from websocket.manager import Manager
 from conf import settings
 from notification.models import Notification
 import re
+import warnings
 
 TOKEN = 't'
 USER = 'u'
@@ -157,17 +158,25 @@ class User:
         return [self.uid] + [friend.decode() for friend in connection.smembers("%s:%s" % (FRIENDS, self.uid))]
 
     def add_request_from(self, current_user):
+        warnings.warn('send_request_to() should be used instead', DeprecationWarning, stacklevel=2)
+        current_user.send_request_to(self)
+
+    def send_request_to(self, user):
         connection = Redis.get_connection()
-        connection.sadd("%s:%s" % (FRIEND_REQUESTS, self.uid), current_user.uid)
-        current_user.follow(self)
-        Notification.objects.create(current_user.fullname,
+        connection.sadd("%s:%s" % (FRIEND_REQUESTS, user.uid), self.uid)
+        self.follow(user)
+        Notification.objects.create(self.fullname,
                                     'request',
-                                    current_user.username,
-                                    self.uid)
+                                    self.username,
+                                    user.uid)
 
     def cancel_request_from(self, current_user):
+        warnings.warn('cancel_request_to() should be used instead', DeprecationWarning, stacklevel=2)
+        current_user.cancel_request_to(self)
+
+    def cancel_request_to(self, user):
         connection = Redis.get_connection()
-        connection.srem("%s:%s" % (FRIEND_REQUESTS, self.uid), current_user.uid)
+        connection.srem("%s:%s" % (FRIEND_REQUESTS, user.uid), self.uid)
 
     def accept_request_from(self, user):
         connection = Redis.get_connection()
@@ -203,11 +212,15 @@ class User:
         connection.srem("%s:%s" % (FOLLOWEES, self.uid), user.uid)
 
     def is_followed_by(self, current_user):
-        if self.uid == current_user.uid:
+        warnings.warn('follows() should be used instead', DeprecationWarning, stacklevel=2)
+        return current_user.follows(self)
+
+    def follows(self, user):
+        if self.uid == user.uid:
             return True
         connection = Redis.get_connection()
-        return connection.sismember('%s:%s' % (FOLLOWERS, self.uid),
-                                    current_user.uid)
+        return connection.sismember('%s:%s' % (FOLLOWERS, user.uid),
+                                    self.uid)
 
     def get_followers(self):
         connection = Redis.get_connection()
