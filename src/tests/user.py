@@ -43,6 +43,10 @@ class FriendShipTest(AsyncTestCase):
                                               'John Doe2',
                                               'http://test.com/img.jpg')
 
+        self.user3 = User.objects.create_user('foo3',
+                                              'John Doe3',
+                                              'http://test.com/img.jpg')
+
     def tearDown(self):
         connection = Redis.get_connection()
         connection.flushall()
@@ -77,6 +81,15 @@ class FriendShipTest(AsyncTestCase):
         self.assertFalse(self.user1.is_friend(self.user2))
         self.assertFalse(self.user2.is_friend(self.user1))
 
+    def test_get_friend_count(self):
+        self.user1.send_request_to(self.user2)
+        self.user2.accept_request_from(self.user1)
+        self.user1.send_request_to(self.user3)
+        self.user3.accept_request_from(self.user1)
+        self.assertEqual(self.user1.get_friend_count(), 2)
+        self.assertEqual(self.user2.get_friend_count(), 1)
+        self.assertEqual(self.user3.get_friend_count(), 1)
+
     def test_follow(self):
         self.user1.follow(self.user2)
         self.assertTrue(self.user1.follows(self.user2))
@@ -87,3 +100,13 @@ class FriendShipTest(AsyncTestCase):
         self.user1.unfollow(self.user2)
         self.assertFalse(self.user1.follows(self.user2))
         self.assertFalse(self.user2.follows(self.user1))
+
+    def test_get_follower_count(self):
+        self.user1.follow(self.user3)
+        self.user2.follow(self.user3)
+        self.assertEqual(self.user3.get_follower_count(), 2)
+
+    def test_get_following_count(self):
+        self.user1.follow(self.user2)
+        self.user1.follow(self.user3)
+        self.assertEqual(self.user1.get_following_count(), 2)
