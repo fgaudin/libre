@@ -115,25 +115,24 @@ class NotificationTest(AsyncTestCase):
         self.assertEqual(notification.link_param, message.id)
         self.assertEqual(notification.new, True)
 
-    @unittest.skip("Todo")
     @gen_test
     def test_repost(self):
         message = yield Message.objects.create_message(
             self.user1,
             'Hello world',
-            'friends')
+            'friends',
+            self.user2.username)
 
-        Comment.objects.create(self.user2, 'First comment', message)
         notifications1 = Notification.objects.get(self.user1)
         notifications2 = Notification.objects.get(self.user2)
 
-        self.assertEqual(len(notifications1), 1)
-        self.assertEqual(len(notifications2), 0)
+        self.assertEqual(len(notifications1), 0)
+        self.assertEqual(len(notifications2), 1)
 
-        notification = notifications1[0]
+        notification = notifications2[0]
         self.assertGreater(notification.id, 0)
-        self.assertEqual(notification.from_fullname, self.user2.fullname)
-        self.assertEqual(notification.action, 'commented')
+        self.assertEqual(notification.from_fullname, self.user1.fullname)
+        self.assertEqual(notification.action, 'reposted')
         self.assertEqual(notification.link_param, message.id)
         self.assertEqual(notification.new, True)
 

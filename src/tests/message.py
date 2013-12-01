@@ -43,7 +43,7 @@ class MessageTest(AsyncTestCase):
         self.assertEqual(saved.liked, 0)
 
     @gen_test
-    def test_create_message_via(self):
+    def test_repost(self):
         message = yield Message.objects.create_message(
             self.user1,
             'Hello world',
