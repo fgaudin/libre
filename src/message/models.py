@@ -1,9 +1,13 @@
-from tornado.escape import json_encode, json_decode
+from tornado.escape import json_encode, json_decode, linkify, _URL_RE
 from data import Redis, next_id
 from websocket.manager import Manager
 import datetime
 from conf import settings
 from comment.models import COMMENT
+from bs4 import BeautifulSoup
+from tornado.httpclient import AsyncHTTPClient
+from notification.models import Notification
+import tornado.gen
 
 MESSAGE = 'm'
 MESSAGE_COUNTERS = 'mc'
@@ -14,6 +18,67 @@ PUBLIC_FEED = 'pf'
 
 
 class MessageManager:
+    @tornado.gen.coroutine
+    def create_message(self, user, body, scope, via, callback=None):
+        from user.models import User
+        soup = BeautifulSoup(body, 'lxml')
+        body = " ".join(soup.stripped_strings)
+
+        message = {}
+        message['scope'] = scope
+        message['body'] = linkify(body, extra_params='target="_blank"')
+        message['body'], mentions = User.objects.replace_mention(message['body'])
+        message['author_uid'] = user.uid
+        message['author_fullname'] = user.fullname
+        message['author_username'] = user.username
+        message['author_pic'] = user.pic
+        message['likes'] = 0
+
+        via_user = None
+        if via and via != user.username:
+            # it's a repost
+            via_user = User.objects.find(username=via)
+            message['via_username'] = via
+            message['via_fullname'] = via_user.fullname
+
+        msg_obj = Message(**message)
+
+        result = _URL_RE.search(body)
+        if result:
+            try:
+                url = result.group()
+                http_client = AsyncHTTPClient()
+                response = yield http_client.fetch(url)
+                soup = BeautifulSoup(response.body, 'lxml')
+
+                try:
+                    oembed_link = soup.find('link', {'rel': 'alternate', 'type': 'application/json+oembed'}).attrs['href']
+                    http_client = AsyncHTTPClient()
+                    oembed = yield http_client.fetch(oembed_link)
+                    json = json_decode(oembed.body)
+                    msg_obj.add_link(url, json['title'], json['thumbnail_url'],
+                                     json['thumbnail_width'], json['thumbnail_height'])
+                except:
+                    title = soup.title
+                    if title:
+                        msg_obj.add_link(url, title.string)
+            except:
+                pass
+
+        msg_obj.save()
+        user.incr_counter('messages')
+        user.push_message(msg_obj)
+        if via_user:
+            Notification.objects.create(user.fullname,
+                                        'reposted',
+                                        msg_obj.id,
+                                        via_user.uid)
+        for u in mentions:
+            Notification.objects.create(user.fullname,
+                                        'mentioned',
+                                        msg_obj.id,
+                                        u.uid)
+
     def get(self, id):
         connection = Redis.get_connection()
         msg = connection.get('{0}:{1}'.format(MESSAGE, id))

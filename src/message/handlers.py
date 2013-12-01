@@ -1,12 +1,9 @@
-from tornado.escape import json_encode, json_decode, linkify, _URL_RE
+from tornado.escape import json_encode
 from tornado.web import authenticated
 from web import BaseHandler
 from message.models import Message
 from user.models import User
 from tornado import gen
-from tornado.httpclient import AsyncHTTPClient
-from bs4 import BeautifulSoup
-from notification.models import Notification
 
 
 class MessageHandler(BaseHandler):
@@ -37,66 +34,15 @@ class MessageHandler(BaseHandler):
 
         via = self.get_argument('via', None)
         body = self.get_argument('body')
+        scope = self.get_argument('scope')
 
-        soup = BeautifulSoup(body, 'lxml')
-        body = " ".join(soup.stripped_strings)
+        yield gen.Task(Message.objects.create_message,
+                       user,
+                       body,
+                       scope,
+                       via)
 
-        message = {}
-        message['scope'] = self.get_argument('scope')
-        message['body'] = linkify(body, extra_params='target="_blank"')
-        message['body'], mentions = User.objects.replace_mention(message['body'])
-        message['author_uid'] = user.uid
-        message['author_fullname'] = user.fullname
-        message['author_username'] = user.username
-        message['author_pic'] = user.pic
-        message['likes'] = 0
-
-        via_user = None
-        if via and via != user.username:
-            # it's a repost
-            via_user = User.objects.find(username=via)
-            message['via_username'] = via
-            message['via_fullname'] = via_user.fullname
-
-        msg_obj = Message(**message)
-
-        result = _URL_RE.search(body)
-        if result:
-            try:
-                url = result.group()
-                http_client = AsyncHTTPClient()
-                response = yield http_client.fetch(url)
-                soup = BeautifulSoup(response.body, 'lxml')
-
-                try:
-                    oembed_link = soup.find('link', {'rel': 'alternate', 'type': 'application/json+oembed'}).attrs['href']
-                    http_client = AsyncHTTPClient()
-                    oembed = yield http_client.fetch(oembed_link)
-                    json = json_decode(oembed.body)
-                    msg_obj.add_link(url, json['title'], json['thumbnail_url'],
-                                     json['thumbnail_width'], json['thumbnail_height'])
-                except:
-                    title = soup.title
-                    if title:
-                        msg_obj.add_link(url, title.string)
-            except:
-                pass
-
-        msg_obj.save()
-        user.incr_counter('messages')
-        user.push_message(msg_obj)
-        if via_user:
-            Notification.objects.create(user.fullname,
-                                        'reposted',
-                                        msg_obj.id,
-                                        via_user.uid)
-        for u in mentions:
-            Notification.objects.create(user.fullname,
-                                        'mentioned',
-                                        msg_obj.id,
-                                        u.uid)
-
-        self.write(json_encode(msg_obj.to_dict()))
+        self.write(json_encode({'posted': True}))
 
 
 class LikeHandler(BaseHandler):
