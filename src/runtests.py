@@ -2,6 +2,7 @@ import tornado.testing
 import unittest
 
 TEST_MODULES = [
+    'tests.comment',
     'tests.data',
     'tests.message',
     'tests.user',

@@ -1,11 +1,31 @@
 from data import Redis, TornadoRedis, next_id
 from tornado.escape import json_encode, json_decode
-from websocket.manager import Manager
+from notification.models import Notification
 
 COMMENT = 'c'
 
 
 class CommentManager:
+    def create(self, user, content, message):
+        comment = Comment(user.uid,
+                          user.username,
+                          user.fullname,
+                          user.pic,
+                          content,
+                          message.id)
+        comment.save()
+        comment.publish()
+        Notification.objects.create(user.fullname,
+                                    'commented',
+                                    message.id,
+                                    message.author_uid)
+
+        return comment
+
+    def count(self, msg_id):
+        connection = Redis.get_connection()
+        return connection.llen('{0}:{1}'.format(COMMENT, msg_id))
+
     def find(self, msg_id):
         connection = Redis.get_connection()
         result = connection.lrange('{0}:{1}'.format(COMMENT, msg_id), 0, -1)
@@ -30,7 +50,7 @@ class Comment:
         self.id = id
 
     def _to_db(self):
-        return {'id': self.id  or next_id('comment'),
+        return {'id': self.id,
                 'author_id': self.author_id,
                 'author_username': self.author_username,
                 'author_fullname': self.author_fullname,
@@ -45,6 +65,8 @@ class Comment:
     def save(self):
         from message.models import Message
         connection = Redis.get_connection()
+        if not self.id:
+            self.id = next_id('comment')
         connection.rpush('{0}:{1}'.format(COMMENT, self.msg_id),
                          json_encode(self._to_db()))
         message = Message(id=self.msg_id)

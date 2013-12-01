@@ -3,7 +3,7 @@ from data import Redis, next_id
 from websocket.manager import Manager
 import datetime
 from conf import settings
-from comment.models import COMMENT
+from comment.models import COMMENT, Comment
 from bs4 import BeautifulSoup
 from tornado.httpclient import AsyncHTTPClient
 from notification.models import Notification
@@ -208,8 +208,7 @@ class Message:
         self._counters = None
 
     def comment_count(self):
-        self.get_counters()
-        return self._counters['comments']
+        return Comment.objects.count(self.id)
 
     def incr_comment(self):
         connection = Redis.get_connection()
