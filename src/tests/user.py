@@ -29,6 +29,32 @@ class UserTest(AsyncTestCase):
         result = User.objects.find(username=user.username)
         self.assertEqual(user.uid, result.uid)
 
+    def test_search(self):
+        user1 = User.objects.create_user('foo1',
+                                         'John Doe',
+                                         'http://test.com/img.jpg')
+        user2 = User.objects.create_user('foo2',
+                                         'Jane Doe',
+                                         'http://test.com/img.jpg')
+        user3 = User.objects.create_user('zoo',
+                                         'John Doe',
+                                         'http://test.com/img.jpg')
+
+        results = User.objects.search('foo')
+        self.assertEqual(len(results), 2)
+        self.assertIn(user1.to_dict(), results)
+        self.assertIn(user2.to_dict(), results)
+
+        results = User.objects.search('foo1')
+        self.assertEqual(len(results), 1)
+        self.assertIn(user1.to_dict(), results)
+
+        results = User.objects.search('oo')
+        self.assertEqual(len(results), 3)
+        self.assertIn(user1.to_dict(), results)
+        self.assertIn(user2.to_dict(), results)
+        self.assertIn(user3.to_dict(), results)
+
 
 class FriendShipTest(AsyncTestCase):
     def setUp(self):

@@ -4,7 +4,6 @@ from user.models import User
 from notification.models import Notification
 from message.models import Message
 from comment.models import Comment
-import unittest
 
 
 class NotificationTest(AsyncTestCase):
