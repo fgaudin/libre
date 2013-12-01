@@ -5,6 +5,7 @@ TEST_MODULES = [
     'tests.comment',
     'tests.data',
     'tests.message',
+    'tests.notification',
     'tests.user',
 ]
 
