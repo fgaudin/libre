@@ -1,5 +1,5 @@
 from user.models import User
-from tornado.escape import json_encode
+from tornado.escape import json_encode, squeeze
 from conf import settings
 import tornado.web
 import tornado.auth
@@ -12,20 +12,31 @@ from data import Redis
 
 class EmailLoginHandler(tornado.web.RequestHandler):
     def post(self):
-        email = self.get_argument('email')
-        password = self.get_argument('password')
+        email = squeeze(self.get_argument('email', ''))
+        password = squeeze(self.get_argument('password', ''))
         action = self.get_argument('action')
+
+        response = {'status': 'failed'}
+
+        if not email or not password:
+            response['error'] = 'Email and password are mandatory'
+            self.write(json_encode(response))
+            return
 
         if action == 'Login':
             uid = get_identity(email, password)
 
-            if uid:
-                user = User.objects.find(uid=uid)
-                if user:
-                    token = generate_token()
-                    user.authenticate(token)
-                    self.set_secure_cookie("auth", token)
-                    self.redirect('/')
+            if not uid:
+                response['error'] = 'Wrong Username/Email and password combination'
+                self.write(json_encode(response))
+                return
+
+            user = User.objects.find(uid=uid)
+            if user:
+                token = generate_token()
+                user.authenticate(token)
+                self.set_secure_cookie("auth", token)
+                self.redirect('/')
         elif action == 'Signup':
             already_exists = email_exists(email)
 

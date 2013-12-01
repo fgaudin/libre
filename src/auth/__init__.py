@@ -43,9 +43,10 @@ def email_exists(email):
 def get_identity(email, password):
     connection = Redis.get_connection()
     result = connection.hmget('%s:%s' % (EMAIL, email), ['pwd', 'uid'])
-    hashed_pwd = result[0].decode('utf-8')
-    uid = result[1].decode('utf-8')
-    if hashed_pwd and uid and verify_hash(password, hashed_pwd):
-        return uid
+    if result[0]:
+        hashed_pwd = result[0].decode('utf-8')
+        uid = result[1].decode('utf-8')
+        if hashed_pwd and uid and verify_hash(password, hashed_pwd):
+            return uid
 
     return None

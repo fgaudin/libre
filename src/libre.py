@@ -14,9 +14,8 @@ from button.handlers import ButtonHandler
 define("port", default=8888, help="run on the given port", type=int)
 
 
-def main():
-    parse_command_line()
-    app = web.Application(
+def initApp():
+    return web.Application(
         [
             (r"/", IndexHandler),
             (r"/profile", ProfileHandler),
@@ -40,6 +39,11 @@ def main():
             twitter_consumer_key=settings.TWITTER_CONSUMER_KEY,
             twitter_consumer_secret=settings.TWITTER_CONSUMER_SECRET
         )
+
+
+def main():
+    parse_command_line()
+    app = initApp()
     app.listen(options.port)
     ioloop.IOLoop.instance().start()
 
