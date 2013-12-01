@@ -3,9 +3,20 @@ from tornado.testing import AsyncHTTPTestCase
 from urllib.parse import urlencode
 from user.models import User
 from tornado.escape import json_decode
+from data import Redis
 
 
 class SignupTest(AsyncHTTPTestCase):
+    def setUp(self):
+        super(SignupTest, self).setUp()
+        connection = Redis.get_connection()
+        connection.flushall()
+
+    def tearDown(self):
+        super(SignupTest, self).tearDown()
+        connection = Redis.get_connection()
+        connection.flushall()
+
     def get_app(self):
         return initApp()
 
@@ -66,3 +77,28 @@ class SignupTest(AsyncHTTPTestCase):
         response = self.wait()
         self.assertEqual(json_decode(response.body)['status'], 'failed')
         self.assertEqual(json_decode(response.body)['error'], 'Wrong Username/Email and password combination')
+
+    def test_login(self):
+        post_data = {'action': 'Signup',
+                     'email': 'foo@test.com',
+                     'password': 'bar'}
+        body = urlencode(post_data)
+        self.http_client.fetch(self.get_url('/login/email'),
+                               self.stop,
+                               method='POST',
+                               body=body,
+                               follow_redirects=False)
+        response = self.wait()
+
+        post_data = {'action': 'Login',
+                     'email': 'foo@test.com',
+                     'password': 'bar'}
+        body = urlencode(post_data)
+        self.http_client.fetch(self.get_url('/login/email'),
+                               self.stop,
+                               method='POST',
+                               body=body,
+                               follow_redirects=False)
+        response = self.wait()
+        self.assertEqual(response.code, 302)
+        self.assertEqual(response.headers['location'], '/')
