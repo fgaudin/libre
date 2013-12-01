@@ -18,6 +18,7 @@ def initApp():
     return web.Application(
         [
             (r"/", IndexHandler),
+            (r"/socket", WebSocketHandler),
             (r"/profile", ProfileHandler),
             (r"/logout", LogoutHandler),
             (r"/login/email", EmailLoginHandler),
@@ -25,7 +26,6 @@ def initApp():
             (r"/login/google", GoogleLoginHandler),
             (r"/login/twitter", TwitterLoginHandler),
             (r"/notifications", NotificationHandler),
-            (r"/socket", WebSocketHandler),
             (r"/messages", MessageHandler),
             (r"/messages/([0-9]+)", MessageHandler),
             (r"/like", LikeHandler),

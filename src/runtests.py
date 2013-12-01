@@ -8,6 +8,7 @@ TEST_MODULES = [
     'tests.message',
     'tests.notification',
     'tests.user',
+    'tests.websocket',
 ]
 
 
