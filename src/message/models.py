@@ -19,7 +19,7 @@ PUBLIC_FEED = 'pf'
 
 class MessageManager:
     @tornado.gen.coroutine
-    def create_message(self, user, body, scope, via):
+    def create_message(self, user, body, scope, via=None):
         from user.models import User
         soup = BeautifulSoup(body, 'lxml')
         body = " ".join(soup.stripped_strings)
@@ -78,6 +78,8 @@ class MessageManager:
                                         'mentioned',
                                         msg_obj.id,
                                         u.uid)
+
+        return msg_obj
 
     def get(self, id):
         connection = Redis.get_connection()
