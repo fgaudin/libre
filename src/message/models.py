@@ -109,7 +109,7 @@ class MessageManager:
         msgs.extend(connection.lrange('%s:%s' % (MESSAGES_TO_PUBLIC, user.uid), 0, limit))
         liked = user.get_liked()
         for_me = False
-        if current_user.is_friend(user) or user.is_followed_by(current_user):
+        if current_user.is_friend(user) or current_user.follows(user):
             for_me = True
         return [Message(for_me=for_me, liked=(str(msg['id']).encode() in liked), **msg) for msg in self.mget(*msgs)]
 

@@ -182,7 +182,7 @@ class User:
         connection = Redis.get_connection()
         connection.sadd("%s:%s" % (FRIENDS, self.uid), user.uid)
         connection.sadd("%s:%s" % (FRIENDS, user.uid), self.uid)
-        self.cancel_request_from(user)
+        user.cancel_request_to(self)
         Notification.objects.create(self.fullname,
                                     'accepted',
                                     self.username,
