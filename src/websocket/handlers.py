@@ -32,14 +32,14 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                                'due to a Redis server error.')
             self.close()
 
-    @tornado.gen.engine
+    @tornado.gen.coroutine
     def listen(self):
         self.client = tornadoredis.Client()
         self.client.connect()
         yield tornado.gen.Task(self.client.subscribe, 'main')
         self.client.listen(self.on_published)
 
-    @tornado.gen.engine
+    @tornado.gen.coroutine
     def listen_to_message(self, msg_id):
         yield tornado.gen.Task(self.client.subscribe, 'msg:{0}'.format(msg_id))
 
