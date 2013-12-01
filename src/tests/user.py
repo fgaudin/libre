@@ -13,7 +13,7 @@ class UserTest(AsyncTestCase):
         connection.flushall()
 
     def test_create_user(self):
-        user = User.objects.create_user('foo',
+        user = User.objects.create('foo',
                                         'John Doe',
                                         'http://test.com/img.jpg')
 
@@ -22,7 +22,7 @@ class UserTest(AsyncTestCase):
         self.assertEqual(user.id, result.id)
 
     def test_find_user_by_username(self):
-        user = User.objects.create_user('foo',
+        user = User.objects.create('foo',
                                         'John Doe',
                                         'http://test.com/img.jpg')
 
@@ -30,13 +30,13 @@ class UserTest(AsyncTestCase):
         self.assertEqual(user.id, result.id)
 
     def test_search(self):
-        user1 = User.objects.create_user('foo1',
+        user1 = User.objects.create('foo1',
                                          'John Doe',
                                          'http://test.com/img.jpg')
-        user2 = User.objects.create_user('foo2',
+        user2 = User.objects.create('foo2',
                                          'Jane Doe',
                                          'http://test.com/img.jpg')
-        user3 = User.objects.create_user('zoo',
+        user3 = User.objects.create('zoo',
                                          'John Doe',
                                          'http://test.com/img.jpg')
 
@@ -61,15 +61,15 @@ class FriendShipTest(AsyncTestCase):
         connection = Redis.get_connection()
         connection.flushall()
 
-        self.user1 = User.objects.create_user('foo',
+        self.user1 = User.objects.create('foo',
                                               'John Doe',
                                               'http://test.com/img.jpg')
 
-        self.user2 = User.objects.create_user('foo2',
+        self.user2 = User.objects.create('foo2',
                                               'John Doe2',
                                               'http://test.com/img.jpg')
 
-        self.user3 = User.objects.create_user('foo3',
+        self.user3 = User.objects.create('foo3',
                                               'John Doe3',
                                               'http://test.com/img.jpg')
 

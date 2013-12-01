@@ -23,7 +23,7 @@ _MENTION_RE = re.compile(to_unicode(r"""@([a-zA-Z0-9_]+)"""))
 
 
 class UserManager:
-    def create_user(self, username, fullname, pic=''):
+    def create(self, username, fullname, pic=''):
         user = User(next_id('user'),
                     username,
                     fullname,

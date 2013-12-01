@@ -34,9 +34,9 @@ class WebsocketTest(AsyncHTTPTestCase):
 
     @gen_test
     def test_websocket(self):
-        user = User.objects.create_user('foo',
-                                        'John Doe',
-                                        'http://test.com/img.jpg')
+        user = User.objects.create('foo',
+                                   'John Doe',
+                                   'http://test.com/img.jpg')
         token = generate_token()
         user.authenticate(token)
 

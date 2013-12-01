@@ -19,7 +19,7 @@ PUBLIC_FEED = 'pf'
 
 class MessageManager:
     @tornado.gen.coroutine
-    def create_message(self, user, body, scope, via=None):
+    def create(self, user, body, scope, via=None):
         from user.models import User
         soup = BeautifulSoup(body, 'lxml')
         body = " ".join(soup.stripped_strings)

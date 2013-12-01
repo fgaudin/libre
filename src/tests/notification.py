@@ -12,11 +12,11 @@ class NotificationTest(AsyncTestCase):
         connection = Redis.get_connection()
         connection.flushall()
 
-        self.user1 = User.objects.create_user('foo',
+        self.user1 = User.objects.create('foo',
                                               'John Doe',
                                               'http://test.com/img.jpg')
 
-        self.user2 = User.objects.create_user('foo2',
+        self.user2 = User.objects.create('foo2',
                                               'John Doe2',
                                               'http://test.com/img2.jpg')
 
@@ -74,7 +74,7 @@ class NotificationTest(AsyncTestCase):
 
     @gen_test
     def test_like(self):
-        message = yield Message.objects.create_message(
+        message = yield Message.objects.create(
             self.user1,
             'Hello world',
             'friends')
@@ -95,7 +95,7 @@ class NotificationTest(AsyncTestCase):
 
     @gen_test
     def test_comment(self):
-        message = yield Message.objects.create_message(
+        message = yield Message.objects.create(
             self.user1,
             'Hello world',
             'friends')
@@ -116,7 +116,7 @@ class NotificationTest(AsyncTestCase):
 
     @gen_test
     def test_repost(self):
-        message = yield Message.objects.create_message(
+        message = yield Message.objects.create(
             self.user1,
             'Hello world',
             'friends',
@@ -137,7 +137,7 @@ class NotificationTest(AsyncTestCase):
 
     @gen_test
     def test_mention(self):
-        message = yield Message.objects.create_message(
+        message = yield Message.objects.create(
             self.user1,
             'hello @foo2',
             'friends')

@@ -43,7 +43,7 @@ class EmailLoginHandler(tornado.web.RequestHandler):
             if not already_exists:
                 username = email.split('@')[0].lower()
                 fullname = email.split('@')[0].replace('.', ' ').replace('_', ' ')
-                user = User.objects.create_user(username, fullname)
+                user = User.objects.create(username, fullname)
                 store_credentials(user.id, email, password)
                 token = generate_token()
                 user.authenticate(token)
@@ -68,7 +68,7 @@ class SocialLoginHandler(tornado.web.RequestHandler):
             user = User.objects.find(id=id.decode())
         else:
             new_user = True
-            user = User.objects.create_user(
+            user = User.objects.create(
                 username,
                 fullname,
                 pic)

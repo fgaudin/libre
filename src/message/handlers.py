@@ -36,10 +36,10 @@ class MessageHandler(BaseHandler):
         body = self.get_argument('body')
         scope = self.get_argument('scope')
 
-        yield Message.objects.create_message(user,
-                                             body,
-                                             scope,
-                                             via)
+        yield Message.objects.create(user,
+                                     body,
+                                     scope,
+                                     via)
 
         self.write(json_encode({'posted': True}))
 
