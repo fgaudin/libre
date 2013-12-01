@@ -24,14 +24,14 @@ class EmailLoginHandler(tornado.web.RequestHandler):
             return
 
         if action == 'Login':
-            uid = get_identity(email, password)
+            id = get_identity(email, password)
 
-            if not uid:
+            if not id:
                 response['error'] = 'Wrong Username/Email and password combination'
                 self.write(json_encode(response))
                 return
 
-            user = User.objects.find(uid=uid)
+            user = User.objects.find(id=id)
             if user:
                 token = generate_token()
                 user.authenticate(token)
@@ -44,7 +44,7 @@ class EmailLoginHandler(tornado.web.RequestHandler):
                 username = email.split('@')[0].lower()
                 fullname = email.split('@')[0].replace('.', ' ').replace('_', ' ')
                 user = User.objects.create_user(username, fullname)
-                store_credentials(user.uid, email, password)
+                store_credentials(user.id, email, password)
                 token = generate_token()
                 user.authenticate(token)
                 self.set_secure_cookie("auth", token)
@@ -63,16 +63,16 @@ class SocialLoginHandler(tornado.web.RequestHandler):
         connection = Redis.get_connection()
         new_user = False
         key = '{0}:{1}'.format(prefix, unsalted_hash(social_id))
-        uid = connection.get(key)
-        if uid:
-            user = User.objects.find(uid=uid.decode())
+        id = connection.get(key)
+        if id:
+            user = User.objects.find(id=id.decode())
         else:
             new_user = True
             user = User.objects.create_user(
                 username,
                 fullname,
                 pic)
-            connection.set(key, user.uid)
+            connection.set(key, user.id)
 
         token = generate_token()
         user.authenticate(token)

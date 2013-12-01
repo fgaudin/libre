@@ -17,9 +17,9 @@ class UserTest(AsyncTestCase):
                                         'John Doe',
                                         'http://test.com/img.jpg')
 
-        self.assertEqual(user.uid, 1)
-        result = User.objects.find(uid=user.uid)
-        self.assertEqual(user.uid, result.uid)
+        self.assertEqual(user.id, 1)
+        result = User.objects.find(id=user.id)
+        self.assertEqual(user.id, result.id)
 
     def test_find_user_by_username(self):
         user = User.objects.create_user('foo',
@@ -27,7 +27,7 @@ class UserTest(AsyncTestCase):
                                         'http://test.com/img.jpg')
 
         result = User.objects.find(username=user.username)
-        self.assertEqual(user.uid, result.uid)
+        self.assertEqual(user.id, result.id)
 
     def test_search(self):
         user1 = User.objects.create_user('foo1',

@@ -12,7 +12,7 @@ class CommentHandler(BaseHandler):
         user = self.get_current_user()
         message_id = self.get_argument('message_id')
         manager = Manager.get_manager()
-        sockets = manager.get_sockets(user.uid)
+        sockets = manager.get_sockets(user.id)
         for socket in sockets:
             socket.listen_to_message(message_id)
 

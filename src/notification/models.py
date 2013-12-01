@@ -16,18 +16,18 @@ ACTIONS = {'follow': 'is following you',
 
 
 class NotificationManager:
-    def create(self, from_fullname, action, link_param, to_uid):
-        notif = Notification(from_fullname, action, link_param, to_uid)
+    def create(self, from_fullname, action, link_param, to_id):
+        notif = Notification(from_fullname, action, link_param, to_id)
         notif.save()
         return notif
 
     def get(self, user):
         connection = Redis.get_connection()
-        result_new_notif = connection.lrange('{0}:{1}'.format(NEW_NOTIFICATION, user.uid),
+        result_new_notif = connection.lrange('{0}:{1}'.format(NEW_NOTIFICATION, user.id),
                                              0,
                                              settings.NOTIFICATION_SIZE)
         new_notifications = [Notification(**json_decode(n)) for n in result_new_notif]
-        result = connection.lrange('{0}:{1}'.format(NOTIFICATION, user.uid),
+        result = connection.lrange('{0}:{1}'.format(NOTIFICATION, user.id),
                                    0,
                                    settings.NOTIFICATION_SIZE)
         notifications = [Notification(new=False, **json_decode(n)) for n in result]
@@ -37,21 +37,21 @@ class NotificationManager:
     def seen(self, user):
         connection = Redis.get_connection()
         result_new_notif = connection.lrange('{0}:{1}'.format(NEW_NOTIFICATION,
-                                                              user.uid),
+                                                              user.id),
                                              0,
                                              settings.NOTIFICATION_SIZE)
-        connection.ltrim('{0}:{1}'.format(NEW_NOTIFICATION, user.uid),
+        connection.ltrim('{0}:{1}'.format(NEW_NOTIFICATION, user.id),
                          1,
                          0)
 
         if result_new_notif:
-            connection.lpush('{0}:{1}'.format(NOTIFICATION, user.uid),
+            connection.lpush('{0}:{1}'.format(NOTIFICATION, user.id),
                              *result_new_notif)
 
     def on_published(self, socket, data):
         manager = Manager.get_manager()
-        uid = manager.get_user(socket)
-        if uid == data['to_uid']:
+        id = manager.get_user(socket)
+        if id == data['to_id']:
             socket.write_message(json_encode({'type': 'notification',
                                               'data': [data]}))
 
@@ -59,7 +59,7 @@ class NotificationManager:
 class Notification:
     objects = NotificationManager()
 
-    def __init__(self, from_fullname, action, link_param=None, to_uid=None,
+    def __init__(self, from_fullname, action, link_param=None, to_id=None,
                  new=True, id=None, *args, **kwargs):
         if action not in ACTIONS.keys():
             raise Exception('Action not defined')
@@ -67,7 +67,7 @@ class Notification:
         self.id = id
         self.from_fullname = from_fullname
         self.action = action
-        self.to_uid = to_uid
+        self.to_id = to_id
         self.link_param = link_param
         self.new = new
 
@@ -79,7 +79,7 @@ class Notification:
 
     def to_dict(self):
         data = self._to_db()
-        data['to_uid'] = self.to_uid
+        data['to_id'] = self.to_id
         data['action_str'] = ACTIONS[self.action]
         data['new'] = self.new
         return data
@@ -88,7 +88,7 @@ class Notification:
         if not self.id:
             self.id = next_id('notification')
             connection = Redis.get_connection()
-            connection.lpush('{0}:{1}'.format(NEW_NOTIFICATION, self.to_uid),
+            connection.lpush('{0}:{1}'.format(NEW_NOTIFICATION, self.to_id),
                              json_encode(self._to_db()))
 
             self.publish()

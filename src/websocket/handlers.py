@@ -56,7 +56,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
     def open(self, *args):
         user = self.get_current_user()
         if user:
-            self.manager.register(user.uid, self)
+            self.manager.register(user.id, self)
         else:
             self.close()
 

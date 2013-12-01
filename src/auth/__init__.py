@@ -28,11 +28,11 @@ def verify_hash(phrase, hashed):
     return salted_hash(phrase, salt) == hashed
 
 
-def store_credentials(uid, email, password):
+def store_credentials(id, email, password):
     connection = Redis.get_connection()
     connection.hmset('{0}:{1}'.format(EMAIL, email),
                      {'pwd': salted_hash(password),
-                      'uid': uid})
+                      'id': id})
 
 
 def email_exists(email):
@@ -42,11 +42,11 @@ def email_exists(email):
 
 def get_identity(email, password):
     connection = Redis.get_connection()
-    result = connection.hmget('%s:%s' % (EMAIL, email), ['pwd', 'uid'])
+    result = connection.hmget('%s:%s' % (EMAIL, email), ['pwd', 'id'])
     if result[0]:
         hashed_pwd = result[0].decode('utf-8')
-        uid = result[1].decode('utf-8')
-        if hashed_pwd and uid and verify_hash(password, hashed_pwd):
-            return uid
+        id = result[1].decode('utf-8')
+        if hashed_pwd and id and verify_hash(password, hashed_pwd):
+            return id
 
     return None

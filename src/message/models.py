@@ -28,7 +28,7 @@ class MessageManager:
         message['scope'] = scope
         message['body'] = linkify(body, extra_params='target="_blank"')
         message['body'], mentions = User.objects.replace_mention(message['body'])
-        message['author_uid'] = user.uid
+        message['author_id'] = user.id
         message['author_fullname'] = user.fullname
         message['author_username'] = user.username
         message['author_pic'] = user.pic
@@ -72,12 +72,12 @@ class MessageManager:
             Notification.objects.create(user.fullname,
                                         'reposted',
                                         msg_obj.id,
-                                        via_user.uid)
+                                        via_user.id)
         for u in mentions:
             Notification.objects.create(user.fullname,
                                         'mentioned',
                                         msg_obj.id,
-                                        u.uid)
+                                        u.id)
 
         return msg_obj
 
@@ -99,14 +99,14 @@ class MessageManager:
     def get_messages_to_friends(self, user, limit=5):
         connection = Redis.get_connection()
         msgs = []
-        msgs.extend(connection.lrange('%s:%s' % (MESSAGES_TO_FRIENDS, user.uid), 0, limit))
+        msgs.extend(connection.lrange('%s:%s' % (MESSAGES_TO_FRIENDS, user.id), 0, limit))
         liked = user.get_liked()
         return [Message(for_me=True, liked=(str(msg['id']).encode() in liked), **msg) for msg in self.mget(*msgs)]
 
     def get_messages_to_public(self, current_user, user, limit=5):
         connection = Redis.get_connection()
         msgs = []
-        msgs.extend(connection.lrange('%s:%s' % (MESSAGES_TO_PUBLIC, user.uid), 0, limit))
+        msgs.extend(connection.lrange('%s:%s' % (MESSAGES_TO_PUBLIC, user.id), 0, limit))
         liked = user.get_liked()
         for_me = False
         if current_user.is_friend(user) or current_user.follows(user):
@@ -116,14 +116,14 @@ class MessageManager:
     def get_friends_feed(self, user):
         connection = Redis.get_connection()
         msgs = []
-        msgs.extend(connection.lrange('%s:%s' % (FRIEND_FEED, user.uid), 0, -1))
+        msgs.extend(connection.lrange('%s:%s' % (FRIEND_FEED, user.id), 0, -1))
         liked = user.get_liked()
         return [Message(for_me=True, liked=(str(msg['id']).encode() in liked), **msg) for msg in self.mget(*msgs)]
 
     def get_public_feed(self, user):
         connection = Redis.get_connection()
         msgs = []
-        msgs.extend(connection.lrange('%s:%s' % (PUBLIC_FEED, user.uid), 0, -1))
+        msgs.extend(connection.lrange('%s:%s' % (PUBLIC_FEED, user.id), 0, -1))
         liked = user.get_liked()
         return [Message(for_me=True, liked=(str(msg['id']).encode() in liked), **msg) for msg in self.mget(*msgs)]
 
@@ -131,12 +131,12 @@ class MessageManager:
         from user.models import User
         message = Message(**data)
         manager = Manager.get_manager()
-        current_user_uid = manager.get_user(socket)
-        if current_user_uid == message.author_uid:
+        current_user_id = manager.get_user(socket)
+        if current_user_id == message.author_id:
             message.for_me = True
         else:
-            current_user = User(current_user_uid, '', '')
-            author = User(message.author_uid, message.author_username, message.author_fullname)
+            current_user = User(current_user_id, '', '')
+            author = User(message.author_id, message.author_username, message.author_fullname)
             if message.scope == 'public' and author.is_followed_by(current_user):
                 message.for_me = True
             elif message.scope == 'friends' and author.is_friend(current_user):
@@ -148,7 +148,7 @@ class MessageManager:
 
 
 class Message:
-    def __init__(self, id=None, scope='', body='', author_uid='',
+    def __init__(self, id=None, scope='', body='', author_id='',
                  author_username='', author_fullname='', author_pic='',
                  date=None, for_me=False, url='', title='', pic='', width='',
                  height='', liked=False, via_username=None,
@@ -157,7 +157,7 @@ class Message:
         self.id = id
         self.scope = scope
         self.body = body
-        self.author_uid = author_uid
+        self.author_id = author_id
         self.author_username = author_username
         self.author_fullname = author_fullname
         self.author_pic = author_pic
@@ -221,7 +221,7 @@ class Message:
         return {'id': self.id,
                 'scope': self.scope,
                 'body': self.body,
-                'author_uid': self.author_uid,
+                'author_id': self.author_id,
                 'author_username': self.author_username,
                 'author_fullname': self.author_fullname,
                 'author_pic': self.author_pic,
@@ -243,7 +243,7 @@ class Message:
         return {'id': self.id,
                 'scope': self.scope,
                 'body': self.body,
-                'author_uid': self.author_uid,
+                'author_id': self.author_id,
                 'author_username': self.author_username,
                 'author_fullname': self.author_fullname,
                 'author_pic': self.author_pic,

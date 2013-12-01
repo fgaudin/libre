@@ -7,7 +7,7 @@ COMMENT = 'c'
 
 class CommentManager:
     def create(self, user, content, message):
-        comment = Comment(user.uid,
+        comment = Comment(user.id,
                           user.username,
                           user.fullname,
                           user.pic,
@@ -18,7 +18,7 @@ class CommentManager:
         Notification.objects.create(user.fullname,
                                     'commented',
                                     message.id,
-                                    message.author_uid)
+                                    message.author_id)
 
         return comment
 
