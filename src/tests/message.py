@@ -63,3 +63,48 @@ class MessageTest(AsyncTestCase):
         self.assertEqual(saved.liked, 0)
         self.assertEqual(saved.via_username, self.user2.username)
         self.assertEqual(saved.via_fullname, self.user2.fullname)
+
+
+class LikeTest(AsyncTestCase):
+    def setUp(self):
+        super(LikeTest, self).setUp()
+        connection = Redis.get_connection()
+        connection.flushall()
+
+        self.user1 = User.objects.create_user('foo',
+                                              'John Doe',
+                                              'http://test.com/img.jpg')
+
+        self.user2 = User.objects.create_user('foo2',
+                                              'John Doe2',
+                                              'http://test.com/img2.jpg')
+
+    def tearDown(self):
+        super(LikeTest, self).tearDown()
+        connection = Redis.get_connection()
+        connection.flushall()
+
+    @gen_test
+    def test_like(self):
+        message = yield Message.objects.create_message(
+            self.user1,
+            'Hello world',
+            'friends')
+
+        self.user2.like(message.id)
+        saved = Message.objects.get(message.id)
+        self.assertEqual(saved.like_count(), 1)
+
+    @gen_test
+    def test_unlike(self):
+        message = yield Message.objects.create_message(
+            self.user1,
+            'Hello world',
+            'friends')
+
+        self.user2.like(message.id)
+        saved = Message.objects.get(message.id)
+        self.assertEqual(saved.like_count(), 1)
+        self.user2.unlike(message.id)
+        saved = Message.objects.get(message.id)
+        self.assertEqual(saved.like_count(), 0)
