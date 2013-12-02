@@ -4,6 +4,7 @@ from web import BaseHandler
 from message.models import Message
 from user.models import User
 from tornado import gen
+from auth.decorators import username_set
 
 
 class MessageHandler(BaseHandler):
@@ -28,6 +29,7 @@ class MessageHandler(BaseHandler):
         self.write(json_encode(response))
 
     @authenticated
+    @username_set
     @gen.coroutine
     def post(self):
         user = self.get_current_user()
@@ -45,6 +47,8 @@ class MessageHandler(BaseHandler):
 
 
 class LikeHandler(BaseHandler):
+    @authenticated
+    @username_set
     def post(self):
         message_id = self.get_argument('message_id')
         user = self.get_current_user()

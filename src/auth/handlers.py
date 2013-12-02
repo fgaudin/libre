@@ -41,14 +41,13 @@ class EmailLoginHandler(tornado.web.RequestHandler):
             already_exists = email_exists(email)
 
             if not already_exists:
-                username = email.split('@')[0].lower()
                 fullname = email.split('@')[0].replace('.', ' ').replace('_', ' ')
-                user = User.objects.create(username, fullname)
+                user = User.objects.create('', fullname)
                 store_credentials(user.id, email, password)
                 token = generate_token()
                 user.authenticate(token)
                 self.set_secure_cookie("auth", token)
-                self.redirect('/profile')
+                self.redirect('/signup')
 
 
 class LogoutHandler(BaseHandler):
@@ -69,7 +68,7 @@ class SocialLoginHandler(tornado.web.RequestHandler):
         else:
             new_user = True
             user = User.objects.create(
-                username,
+                '',
                 fullname,
                 pic)
             connection.set(key, user.id)

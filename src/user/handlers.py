@@ -1,11 +1,62 @@
-from tornado.escape import json_encode
+from tornado.escape import json_encode, squeeze
 from web import BaseHandler
-from user.models import User
+from user.models import User, InvalidUsernameError, InvalidFullnameError, \
+    UsernameTakenError
 from tornado.web import authenticated
+from auth.decorators import username_set
+
+
+class SignupHandler(BaseHandler):
+    @authenticated
+    def get(self):
+        user = self.get_current_user()
+
+        if user.username:
+            self.redirect('/')
+
+        user.username = user.objects.get_valid_username(user.fullname)
+        self.render("signup.html",
+                    user=user,
+                    errors=[])
+
+    @authenticated
+    def post(self):
+        user = self.get_current_user()
+
+        if user.username:
+            self.redirect('/')
+
+        username = squeeze(self.get_argument('username', ''))
+        fullname = squeeze(self.get_argument('fullname', ''))
+
+        errors = []
+
+        if not username or not fullname:
+            errors.append('Username and full name are mandatory')
+        else:
+            try:
+                user.username = username
+                user.fullname = fullname
+                user.save()
+                self.redirect('/')
+                return
+            except InvalidUsernameError:
+                errors.append('Username must contain only letters, numbers and underscores (a-z, 0-9, _)')
+            except InvalidFullnameError:
+                errors.append('Full name must contain only letters, numbers, underscores and spaces (a-z, 0-9, _)')
+            except UsernameTakenError:
+                errors.append('This username is already taken')
+            except Exception as e:
+                errors.append('Unexpected error')
+
+        self.render("signup.html",
+                    user=user,
+                    errors=errors)
 
 
 class ProfileHandler(BaseHandler):
     @authenticated
+    @username_set
     def get(self):
         user = self.get_current_user()
         friend_ids = user.get_friends()
@@ -20,21 +71,10 @@ class ProfileHandler(BaseHandler):
                     followers=followers,
                     followees=followees)
 
-    @authenticated
-    def post(self):
-        username = self.get_argument('username')
-        fullname = self.get_argument('fullname')
-
-        user = self.get_current_user()
-        try:
-            user.update(username, fullname)
-            self.redirect('/')
-        except Exception as e:
-            print(e)
-            self.render("index.html", user=self.get_current_user())
-
 
 class UserHandler(BaseHandler):
+    @authenticated
+    @username_set
     def get(self, username):
         user = User.objects.find(username=username)
         current_user = self.get_current_user()
@@ -66,6 +106,7 @@ class UserHandler(BaseHandler):
         self.write(json_encode(response))
 
     @authenticated
+    @username_set
     def post(self, username):
         action = self.get_argument('action')
         user = User.objects.find(username=username)

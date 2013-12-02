@@ -32,9 +32,9 @@ class SignupTest(AsyncHTTPTestCase):
                                follow_redirects=False)
         response = self.wait()
         self.assertEqual(response.code, 302)
-        self.assertEqual(response.headers['location'], '/profile')
+        self.assertEqual(response.headers['location'], '/signup')
 
-        user = User.objects.find(username='foo')
+        user = User.objects.find(id=1)
         self.assertIsNotNone(user)
 
     def test_login_failed_empty(self):

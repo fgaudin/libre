@@ -1,5 +1,5 @@
 from data import Redis, TornadoRedis, next_id
-from tornado.escape import json_encode, json_decode, to_unicode
+from tornado.escape import json_encode, json_decode, to_unicode, squeeze
 import hashlib
 from message.models import MESSAGES_TO_FRIENDS, MESSAGES_TO_PUBLIC, FRIEND_FEED, \
     PUBLIC_FEED, Message
@@ -8,6 +8,7 @@ from conf import settings
 from notification.models import Notification
 import re
 import warnings
+import random
 
 TOKEN = 't'
 USER = 'u'
@@ -18,6 +19,9 @@ FOLLOWERS = 'fw'
 FOLLOWEES = 'fe'
 LIKES = 'l'
 USER_COUNTERS = 'uc'
+
+_USERNAME_RE = re.compile(to_unicode(r"""^[a-zA-Z0-9_]+$"""))
+_FULLNAME_RE = re.compile(to_unicode(r"""^[a-zA-Z0-9_ ]+$"""))
 
 _MENTION_RE = re.compile(to_unicode(r"""@([a-zA-Z0-9_]+)"""))
 
@@ -30,6 +34,18 @@ class UserManager:
                     pic=pic)
         user.save()
         return user
+
+    def get_valid_username(self, name):
+        connection = Redis.get_connection()
+        username = squeeze(name).replace(' ', '_').lower()
+        retry = 0
+        while connection.exists('{0}:{1}'.format(REVERSE_USER, username)):
+            username = squeeze(name).replace(' ', '_').lower() + str(random.randint(0, 99999))
+            retry += 1
+            if retry > 10:
+                break
+
+        return username
 
     def find(self, token=None, id=None, username=None):
         connection = Redis.get_connection()
@@ -79,7 +95,15 @@ class UserManager:
         return text, users
 
 
-class UserAlreadyExists(Exception):
+class InvalidUsernameError(Exception):
+    pass
+
+
+class InvalidFullnameError(Exception):
+    pass
+
+
+class UsernameTakenError(Exception):
     pass
 
 
@@ -105,36 +129,27 @@ class User:
                 'fullname': self.fullname,
                 'pic': self.pic}
 
+    def _validate(self):
+        if self.username and not _USERNAME_RE.match(self.username):
+            raise InvalidUsernameError()
+        if not _FULLNAME_RE.match(self.fullname):
+            raise InvalidFullnameError()
+
+        return True
+
     def save(self):
-        connection = Redis.get_connection()
-        if not connection.setnx('%s:%s' % (USER, self.id),
-                                json_encode(self._to_db())):
-            raise UserAlreadyExists()
+        if self._validate():
+            connection = Redis.get_connection()
+            if self.username:
+                if not connection.setnx('%s:%s' % (REVERSE_USER, self.username),
+                                        json_encode(self._to_db())):
+                    raise UsernameTakenError()
 
-        connection.set('%s:%s' % (REVERSE_USER, self.username),
-                                  json_encode(self._to_db()))
-        connection.hmset('{0}:{1}'.format(USER_COUNTERS, self.id),
-                                          {'friends': 0,
-                                           'followers': 0,
-                                           'following': 0,
-                                           'messages': 0})
+            connection.set('%s:%s' % (USER, self.id),
+                           json_encode(self._to_db()))
 
-    def update(self, username, fullname):
-        connection = Redis.get_connection()
-        if self.username != username:
-            if not connection.setnx('%s:%s' % (REVERSE_USER, username),
-                                    ''):
-                raise UserAlreadyExists()
-            else:
-                connection.delete('%s:%s' % (REVERSE_USER, self.username))
-
-        self.username = username
-        self.fullname = fullname
-
-        connection.set('%s:%s' % (USER, self.id),
-                       json_encode(self._to_db()))
-        connection.set('%s:%s' % (REVERSE_USER, self.username),
-                                  json_encode(self._to_db()))
+            connection.hmset('{0}:{1}'.format(USER_COUNTERS, self.id),
+                                              {'messages': 0})
 
     def authenticate(self, token):
         connection = Redis.get_connection()

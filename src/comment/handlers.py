@@ -4,10 +4,12 @@ from tornado.escape import json_encode
 from websocket.manager import Manager
 from tornado.web import authenticated
 from message.models import Message
+from auth.decorators import username_set
 
 
 class CommentHandler(BaseHandler):
     @authenticated
+    @username_set
     def get(self):
         user = self.get_current_user()
         message_id = self.get_argument('message_id')
@@ -20,6 +22,7 @@ class CommentHandler(BaseHandler):
         self.write(json_encode({'comment': [c.to_dict() for c in comments]}))
 
     @authenticated
+    @username_set
     def post(self):
         message_id = self.get_argument('message_id')
         comment_content = self.get_argument('comment')

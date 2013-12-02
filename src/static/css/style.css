@@ -28,6 +28,9 @@ a, a:hover {
 .hidden {
     display: none;
 }
+.errors {
+    background: red;
+}
 #header {
     background: #326342;
     height: 40px;

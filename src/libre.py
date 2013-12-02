@@ -5,7 +5,7 @@ from websocket.handlers import WebSocketHandler
 from tornado import web, ioloop
 from auth.handlers import FacebookGraphLoginHandler, \
     LogoutHandler, EmailLoginHandler, GoogleLoginHandler, TwitterLoginHandler
-from user.handlers import UserHandler, ProfileHandler
+from user.handlers import UserHandler, ProfileHandler, SignupHandler
 from conf import settings
 from comment.handlers import CommentHandler
 from notification.handlers import NotificationHandler
@@ -19,6 +19,7 @@ def initApp():
         [
             (r"/", IndexHandler),
             (r"/socket", WebSocketHandler),
+            (r"/signup", SignupHandler),
             (r"/profile", ProfileHandler),
             (r"/logout", LogoutHandler),
             (r"/login/email", EmailLoginHandler),
