@@ -18,7 +18,7 @@ FRIEND_REQUESTS = 'fr'
 FOLLOWERS = 'fw'
 FOLLOWEES = 'fe'
 LIKES = 'l'
-USER_COUNTERS = 'uc'
+MESSAGE_COUNT = 'umc'
 
 _USERNAME_RE = re.compile(to_unicode(r"""^[a-zA-Z0-9_]+$"""))
 _FULLNAME_RE = re.compile(to_unicode(r"""^[a-zA-Z0-9_ ]+$"""))
@@ -148,9 +148,6 @@ class User:
             connection.set('%s:%s' % (USER, self.id),
                            json_encode(self._to_db()))
 
-            connection.hmset('{0}:{1}'.format(USER_COUNTERS, self.id),
-                                              {'messages': 0})
-
     def authenticate(self, token):
         connection = Redis.get_connection()
         connection.setex('%s:%s' % (TOKEN, token), 3600, self.id)
@@ -242,21 +239,6 @@ class User:
         connection = Redis.get_connection()
         return [followee.decode() for followee in connection.smembers("%s:%s" % (FOLLOWEES, self.id))]
 
-    def get_counters(self):
-        if not self._counters:
-            connection = Redis.get_connection()
-            result = connection.hmget('{0}:{1}'.format(USER_COUNTERS, self.id),
-                                      ['friends', 'followers',
-                                       'following', 'messages'])
-            self._counters = {'friends': int(result[0]),
-                              'followers': int(result[1]),
-                              'following': int(result[2]),
-                              'messages': int(result[3])}
-
-    def _get_counter(self, counter):
-        self.get_counters()
-        return self._counters[counter]
-
     def get_friend_count(self):
         connection = Redis.get_connection()
         return connection.scard('{0}:{1}'.format(FRIENDS, self.id))
@@ -269,19 +251,13 @@ class User:
         connection = Redis.get_connection()
         return connection.scard('{0}:{1}'.format(FOLLOWEES, self.id))
 
+    def incr_message_count(self):
+        connection = Redis.get_connection()
+        connection.incrby('{0}:{1}'.format(MESSAGE_COUNT, self.id))
+
     def get_message_count(self):
-        return self._get_counter('messages')
-
-    def incr_counter(self, counter):
         connection = Redis.get_connection()
-        connection.hincrby('{0}:{1}'.format(USER_COUNTERS, self.id),
-                           counter)
-
-    def decr_counter(self, counter):
-        connection = Redis.get_connection()
-        connection.hincrby('{0}:{1}'.format(USER_COUNTERS, self.id),
-                           counter,
-                           - 1)
+        return int(connection.get('{0}:{1}'.format(MESSAGE_COUNT, self.id)) or 0)
 
     def get_liked(self):
         connection = Redis.get_connection()

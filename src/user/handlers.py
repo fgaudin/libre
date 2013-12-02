@@ -65,11 +65,12 @@ class ProfileHandler(BaseHandler):
         followers = User.objects.mget(*follower_ids)
         followee_ids = user.get_followees()
         followees = User.objects.mget(*followee_ids)
-        self.render("index.html",
-                    user=user,
-                    friends=friends,
-                    followers=followers,
-                    followees=followees)
+
+        response = {'friends': friends,
+                    'followers': followers,
+                    'followees': followees}
+
+        self.write(json_encode(response))
 
 
 class UserHandler(BaseHandler):

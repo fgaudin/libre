@@ -101,6 +101,7 @@ App.Router.map(function () {
               this.resource("user_public", { path: "public" })
           });
       });
+      this.resource("profile", {path: "profile"})
       this.resource("message", { path: "/message/:message_id" });
       this.route("create", {path: "create/:url"})
   });
@@ -308,6 +309,12 @@ App.LibreIndexController = Ember.ArrayController.extend({
          twitterLogin: function(){
              window.open("/login/twitter", "_blank", "height=400,width=600");
          }
+    }
+});
+
+App.ProfileRoute = Ember.Route.extend({
+    model: function(){
+        return Ember.$.getJSON('/profile');
     }
 });
 

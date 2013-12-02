@@ -64,6 +64,14 @@ class MessageTest(AsyncTestCase):
         self.assertEqual(saved.via_username, self.user2.username)
         self.assertEqual(saved.via_fullname, self.user2.fullname)
 
+    @gen_test
+    def test_message_count(self):
+        message = yield Message.objects.create(
+            self.user1,
+            'Hello world',
+            'friends')
+        self.assertEqual(self.user1.get_message_count(), 1)
+
 
 class LikeTest(AsyncTestCase):
     def setUp(self):

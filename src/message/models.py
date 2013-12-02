@@ -66,7 +66,7 @@ class MessageManager:
                 pass
 
         msg_obj.save()
-        user.incr_counter('messages')
+        user.incr_message_count()
         user.push_message(msg_obj)
         if via_user:
             Notification.objects.create(user.fullname,
